@@ -358,8 +358,11 @@ But:
 ## 📌 Status
 
 🟢 Monorepo initialized
+
 🟢 Frontend + backend connected
+
 🟡 Core pipeline in development
+
 🔴 Recipe system + cart generation pending
 
 ---
