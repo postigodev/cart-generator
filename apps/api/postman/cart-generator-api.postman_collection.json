@@ -1,0 +1,498 @@
+{
+  "info": {
+    "_postman_id": "8e4fce99-71f2-4afb-bac5-2b8f9bb2a601",
+    "name": "Cart Generator API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Local collection for testing the Cart Generator NestJS API."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001"
+    },
+    {
+      "key": "userId",
+      "value": "user-1"
+    },
+    {
+      "key": "requestId",
+      "value": "postman-local-1"
+    },
+    {
+      "key": "recipeId",
+      "value": ""
+    },
+    {
+      "key": "cartDraftId",
+      "value": ""
+    },
+    {
+      "key": "generatedCartId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Recipes",
+      "item": [
+        {
+          "name": "List Recipes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test('response is an array', function () {",
+                  "  pm.expect(Array.isArray(data)).to.eql(true);",
+                  "});",
+                  "",
+                  "if (Array.isArray(data) && data.length > 0 && data[0].id) {",
+                  "  pm.collectionVariables.set('recipeId', data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-user-id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "x-request-id",
+                "value": "{{requestId}}-list-recipes"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/recipes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recipes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Recipe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201 or 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test('created recipe has id', function () {",
+                  "  pm.expect(data.id).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('recipeId', data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-user-id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "x-request-id",
+                "value": "{{requestId}}-create-recipe"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tallarines verdes caseros\",\n  \"cuisine\": \"Peruvian\",\n  \"description\": \"Pasta with herb sauce\",\n  \"servings\": 4,\n  \"ingredients\": [\n    {\n      \"canonical_ingredient\": \"pasta\",\n      \"amount\": 500,\n      \"unit\": \"g\"\n    },\n    {\n      \"canonical_ingredient\": \"cilantro\",\n      \"amount\": 2,\n      \"unit\": \"cup\"\n    }\n  ],\n  \"steps\": [\n    {\n      \"step\": 1,\n      \"what_to_do\": \"Boil the pasta.\"\n    },\n    {\n      \"step\": 2,\n      \"what_to_do\": \"Blend the herb sauce and combine.\"\n    }\n  ],\n  \"tags\": [\"dinner\", \"pasta\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/recipes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recipes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Recipe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test('recipe name updated', function () {",
+                  "  pm.expect(data.name).to.eql('Tallarines verdes familiares');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-user-id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "x-request-id",
+                "value": "{{requestId}}-update-recipe"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tallarines verdes familiares\",\n  \"description\": \"Updated family version for manual testing.\",\n  \"tags\": [\"dinner\", \"pasta\", \"updated\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/recipes/{{recipeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recipes",
+                "{{recipeId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Generate Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test('cart draft id exists', function () {",
+                  "  pm.expect(data.cart_draft_id).to.be.a('string');",
+                  "});",
+                  "pm.test('matched items array exists', function () {",
+                  "  pm.expect(Array.isArray(data.matched_items)).to.eql(true);",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('cartDraftId', data.cart_draft_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-user-id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "x-request-id",
+                "value": "{{requestId}}-generate-cart"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"selections\": [\n    {\n      \"recipe_id\": \"{{recipeId}}\",\n      \"recipe_type\": \"base\",\n      \"quantity\": 2,\n      \"servings_override\": 4\n    }\n  ],\n  \"retailer\": \"walmart\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/generate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cart",
+                "generate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Generated Cart History",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test('history is an array', function () {",
+                  "  pm.expect(Array.isArray(data)).to.eql(true);",
+                  "});",
+                  "",
+                  "if (Array.isArray(data) && data.length > 0 && data[0].id) {",
+                  "  pm.collectionVariables.set('generatedCartId', data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-user-id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "x-request-id",
+                "value": "{{requestId}}-generated-history"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cart/generated/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cart",
+                "generated",
+                "history"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Generated Carts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test('generated carts is an array', function () {",
+                  "  pm.expect(Array.isArray(data)).to.eql(true);",
+                  "});",
+                  "",
+                  "if (Array.isArray(data) && data.length > 0 && data[0].id) {",
+                  "  pm.collectionVariables.set('generatedCartId', data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-user-id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "x-request-id",
+                "value": "{{requestId}}-generated-list"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cart/generated",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cart",
+                "generated"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Generated Cart By Id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test('generated cart id matches variable when available', function () {",
+                  "  if (pm.collectionVariables.get('generatedCartId')) {",
+                  "    pm.expect(data.id).to.eql(pm.collectionVariables.get('generatedCartId'));",
+                  "  } else {",
+                  "    pm.expect(data.id).to.be.a('string');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-user-id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "x-request-id",
+                "value": "{{requestId}}-generated-get"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cart/generated/{{generatedCartId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cart",
+                "generated",
+                "{{generatedCartId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Cart Drafts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test('drafts is an array', function () {",
+                  "  pm.expect(Array.isArray(data)).to.eql(true);",
+                  "});",
+                  "",
+                  "if (Array.isArray(data) && data.length > 0 && data[0].id) {",
+                  "  pm.collectionVariables.set('cartDraftId', data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-user-id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "x-request-id",
+                "value": "{{requestId}}-drafts-list"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cart/drafts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cart",
+                "drafts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Cart Draft By Id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.test('draft id matches variable when available', function () {",
+                  "  if (pm.collectionVariables.get('cartDraftId')) {",
+                  "    pm.expect(data.id).to.eql(pm.collectionVariables.get('cartDraftId'));",
+                  "  } else {",
+                  "    pm.expect(data.id).to.be.a('string');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-user-id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "x-request-id",
+                "value": "{{requestId}}-drafts-get"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cart/drafts/{{cartDraftId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cart",
+                "drafts",
+                "{{cartDraftId}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
