@@ -1,3 +1,5 @@
+import type { Tag } from './tag';
+
 export type RecipeStep = {
   step: number;
   what_to_do: string;
@@ -34,7 +36,8 @@ export type BaseRecipe = {
   servings: number;
   ingredients: DishIngredient[];
   steps: RecipeStep[];
-  tags?: string[];
+  tag_ids: string[];
+  tags: Tag[];
   created_at: string;
   updated_at: string;
 };

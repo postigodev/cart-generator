@@ -73,8 +73,11 @@ export class BaseRecipeResponseDto {
   @ApiProperty({ type: () => [RecipeStepResponseDto] })
   steps!: RecipeStepResponseDto[];
 
-  @ApiPropertyOptional({ example: ['dinner', 'comfort food'] })
-  tags?: string[];
+  @ApiProperty({ example: ['tag-system-dinner', 'tag-user-comfort-food'] })
+  tag_ids!: string[];
+
+  @ApiProperty({ type: () => [TagResponseDto] })
+  tags!: TagResponseDto[];
 
   @ApiProperty({ example: '2026-03-19T03:12:00.000Z' })
   created_at!: string;

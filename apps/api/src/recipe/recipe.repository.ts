@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import type { BaseRecipe } from '@cart/shared';
 import { Prisma } from '../../generated/prisma/index.js';
 import { PrismaService } from '../prisma/prisma.service';
@@ -60,116 +60,39 @@ export class RecipeRepository {
     });
   }
 
-  private normalizeTagName(tag: string): string {
-    return tag.trim().replace(/\s+/g, ' ');
-  }
+  private async validateTagIdsForActor(ownerUserId: string, tagIds?: string[]) {
+    const uniqueTagIds = Array.from(new Set((tagIds ?? []).filter(Boolean)));
 
-  private normalizeTagSlug(tag: string): string {
-    return this.normalizeTagName(tag)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  }
-
-  private async createUserTagWithRetry(
-    ownerUserId: string,
-    name: string,
-    slug: string,
-  ) {
-    try {
-      return await this.prisma.tag.create({
-        data: {
-          ownerUserId,
-          name,
-          slug,
-          scope: 'user',
-        },
-      });
-    } catch (error) {
-      if (this.isUniqueConstraintError(error)) {
-        const existingTag = await this.prisma.tag.findFirst({
-          where: {
-            ownerUserId,
-            scope: 'user',
-            slug,
-          },
-        });
-
-        if (existingTag) {
-          return existingTag;
-        }
-      }
-
-      throw error;
-    }
-  }
-
-  private async resolveTagIdsForActor(ownerUserId: string, tags?: string[]) {
-    const normalizedTags = (tags ?? [])
-      .map((tag) => this.normalizeTagName(tag))
-      .filter((tag) => tag.length > 0);
-
-    if (normalizedTags.length === 0) {
+    if (uniqueTagIds.length === 0) {
       return [];
     }
 
-    const uniqueTags = Array.from(
-      new Map(
-        normalizedTags.map((tag) => [this.normalizeTagSlug(tag), tag] as const),
-      ).entries(),
-    ).map(([slug, name]) => ({ slug, name }));
+    const tags = await this.prisma.tag.findMany({
+      where: {
+        id: { in: uniqueTagIds },
+      },
+    });
 
-    const slugs = uniqueTags.map((tag) => tag.slug);
-    const [systemTags, userTags] = await Promise.all([
-      this.prisma.tag.findMany({
-        where: {
-          scope: 'system',
-          slug: { in: slugs },
-        },
-      }),
-      this.prisma.tag.findMany({
-        where: {
-          scope: 'user',
-          ownerUserId,
-          slug: { in: slugs },
-        },
-      }),
-    ]);
-
-    const resolvedTags = new Map<string, { id: string }>();
-
-    for (const tag of systemTags) {
-      resolvedTags.set(tag.slug, tag);
+    if (tags.length !== uniqueTagIds.length) {
+      throw new BadRequestException('One or more tag_ids are invalid');
     }
 
-    for (const tag of userTags) {
-      if (!resolvedTags.has(tag.slug)) {
-        resolvedTags.set(tag.slug, tag);
-      }
-    }
+    const forbiddenTag = tags.find(
+      (tag) => tag.scope === 'user' && tag.ownerUserId !== ownerUserId,
+    );
 
-    for (const tag of uniqueTags) {
-      if (resolvedTags.has(tag.slug)) {
-        continue;
-      }
-
-      const createdTag = await this.createUserTagWithRetry(
-        ownerUserId,
-        tag.name,
-        tag.slug,
+    if (forbiddenTag) {
+      throw new ForbiddenException(
+        'You can only assign your own user tags or shared system tags',
       );
-      resolvedTags.set(tag.slug, createdTag);
     }
 
-    return uniqueTags
-      .map((tag) => resolvedTags.get(tag.slug))
-      .filter((tag): tag is { id: string } => Boolean(tag))
-      .map((tag) => tag.id);
+    return uniqueTagIds;
   }
 
   async create(input: CreateRecipeDto, actorUserId?: string): Promise<BaseRecipe> {
     const actor = await this.resolveActorUser(actorUserId);
-    const tagIds = await this.resolveTagIdsForActor(actor.id, input.tags);
+    const tagIds = await this.validateTagIdsForActor(actor.id, input.tag_ids);
 
     const recipe = await this.prisma.baseRecipe.create({
       data: {
@@ -289,8 +212,8 @@ export class RecipeRepository {
     }
 
     const tagIds =
-      input.tags !== undefined
-        ? await this.resolveTagIdsForActor(actor.id, input.tags)
+      input.tag_ids !== undefined
+        ? await this.validateTagIdsForActor(actor.id, input.tag_ids)
         : null;
 
     const recipe = await this.prisma.baseRecipe.update({

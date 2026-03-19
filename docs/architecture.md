@@ -321,7 +321,7 @@ Status:
 
 - explicit `Tag` and `RecipeTag` persistence is implemented
 - `/api/v1/tags` is implemented
-- recipes still expose `tags: string[]` at the HTTP boundary while resolving relational tags underneath
+- recipes now accept `tag_ids` on write and return expanded `tags` on read
 - `cuisine` is still a free string
 - controlled cuisine is still the next taxonomy step
 

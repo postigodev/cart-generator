@@ -255,7 +255,7 @@ Why:
 
 Status:
 - implemented in persistence and via `/api/v1/tags`
-- recipes still expose `tags: string[]` at the HTTP boundary for now
+- recipes now accept `tag_ids` on write and return expanded `tags` on read
 
 ## 21. Replace Boolean Ownership Semantics With Clearer States Later
 

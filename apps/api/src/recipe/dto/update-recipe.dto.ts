@@ -51,9 +51,9 @@ export class UpdateRecipeDto {
   @Type(() => CreateRecipeStepDto)
   steps?: CreateRecipeStepDto[];
 
-  @ApiPropertyOptional({ example: ['updated'] })
+  @ApiPropertyOptional({ example: ['tag-system-updated'] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  tags?: string[];
+  tag_ids?: string[];
 }

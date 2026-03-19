@@ -90,9 +90,9 @@ export class CreateRecipeDto {
   @Type(() => CreateRecipeStepDto)
   steps!: CreateRecipeStepDto[];
 
-  @ApiPropertyOptional({ example: ['dinner', 'comfort food'] })
+  @ApiPropertyOptional({ example: ['tag-system-dinner', 'tag-user-comfort-food'] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  tags?: string[];
+  tag_ids?: string[];
 }

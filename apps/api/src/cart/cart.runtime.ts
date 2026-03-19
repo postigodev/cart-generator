@@ -80,7 +80,7 @@ const toDish = (recipe: BaseRecipe, servings: number): Dish => {
     name: recipe.name,
     cuisine: recipe.cuisine,
     servings,
-    tags: recipe.tags,
+    tags: recipe.tags.map((tag) => tag.name),
     steps: recipe.steps,
     ingredients: recipe.ingredients.map((ingredient) => ({
       ...ingredient,

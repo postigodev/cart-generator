@@ -84,7 +84,8 @@ type BaseRecipe = {
   servings: number;
   ingredients: DishIngredient[];
   steps: RecipeStep[];
-  tags?: string[];
+  tag_ids: string[];
+  tags: Tag[];
   created_at: string;
   updated_at: string;
 };
@@ -476,6 +477,8 @@ Interpretation:
 - system tags are shared taxonomy
 - user tags are private to the owner unless sharing is introduced later
 - recipes now link to tags relationally, not through a persisted string array column
+- recipe writes now reference tags by `tag_ids`
+- recipe reads return expanded `tags` alongside `tag_ids`
 
 ## Current Model Constraints
 
@@ -486,11 +489,11 @@ Interpretation:
 - one `Cart` is now the parent of persisted `ShoppingCart` snapshots
 - auth can attach multiple identities to one user account
 - tags are stored relationally as `Tag` + `RecipeTag`
+- recipe HTTP payloads now use explicit tag references instead of `tags: string[]`
 
 ## Known Future Changes
 
 - `RecipeVariant` and adaptation models still need runtime implementation
-- recipe HTTP payloads may later evolve from `tags: string[]` to more explicit tag references
 - the web app still needs to migrate from `x-user-id` fallback to bearer-token auth
 - retailer types will expand beyond `"walmart"` once real integrations exist
 - cuisine will likely move from free string to controlled taxonomy

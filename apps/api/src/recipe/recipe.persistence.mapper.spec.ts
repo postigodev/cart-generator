@@ -30,7 +30,7 @@ describe('recipe.persistence.mapper', () => {
             what_to_do: 'Brown the chicken thighs.',
           },
         ],
-        tags: ['dinner'],
+        tag_ids: ['tag-system-dinner'],
       },
       'user-1',
     );
@@ -84,7 +84,7 @@ describe('recipe.persistence.mapper', () => {
           what_to_do: 'Add rice and simmer until cooked.',
         },
       ],
-      tags: ['updated'],
+      tag_ids: ['tag-system-updated'],
     });
 
     expect(result).toEqual({

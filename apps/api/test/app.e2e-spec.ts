@@ -40,7 +40,17 @@ describe('AppController (e2e)', () => {
         what_to_do: 'Cook the rice',
       },
     ],
-    tags: ['updated'],
+    tag_ids: ['tag-system-updated'],
+    tags: [
+      {
+        id: 'tag-system-updated',
+        name: 'Updated',
+        slug: 'updated',
+        scope: 'system',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -149,7 +159,7 @@ describe('AppController (e2e)', () => {
           what_to_do: 'Cook the rice',
         },
       ],
-      tags: ['updated'],
+      tag_ids: ['tag-system-updated'],
     };
 
     await request(app.getHttpServer())

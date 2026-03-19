@@ -34,7 +34,27 @@ export const recipeExample = {
       what_to_do: 'Add rice and simmer until cooked.',
     },
   ],
-  tags: ['dinner', 'comfort food'],
+  tag_ids: ['tag-system-dinner', 'tag-user-comfort-food'],
+  tags: [
+    {
+      id: 'tag-system-dinner',
+      owner_user_id: undefined,
+      name: 'Dinner',
+      slug: 'dinner',
+      scope: 'system',
+      created_at: '2026-03-19T03:12:00.000Z',
+      updated_at: '2026-03-19T03:12:00.000Z',
+    },
+    {
+      id: 'tag-user-comfort-food',
+      owner_user_id: 'user-1',
+      name: 'Comfort Food',
+      slug: 'comfort-food',
+      scope: 'user',
+      created_at: '2026-03-19T03:12:00.000Z',
+      updated_at: '2026-03-19T03:12:00.000Z',
+    },
+  ],
   created_at: '2026-03-19T03:12:00.000Z',
   updated_at: '2026-03-19T03:12:00.000Z',
 };
@@ -93,7 +113,7 @@ export const createRecipeRequestExample = {
       what_to_do: 'Add rice and simmer until cooked.',
     },
   ],
-  tags: ['dinner', 'comfort food'],
+  tag_ids: ['tag-system-dinner', 'tag-user-comfort-food'],
 };
 
 export const updateRecipeRequestExample = {
@@ -127,7 +147,7 @@ export const updateRecipeRequestExample = {
       what_to_do: 'Add rice, stock, and simmer until cooked.',
     },
   ],
-  tags: ['dinner', 'updated'],
+  tag_ids: ['tag-system-dinner', 'tag-system-updated'],
 };
 
 export const cartDraftExample = {

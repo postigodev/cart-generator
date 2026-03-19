@@ -1,3 +1,4 @@
+import { mapTag } from '../tags/tags.mapper';
 import type { BaseRecipe, DishIngredient, RecipeStep } from '@cart/shared';
 import type {
   DishIngredient as PrismaDishIngredient,
@@ -39,10 +40,14 @@ export const mapBaseRecipe = (
     .slice()
     .sort((left, right) => left.stepNumber - right.stepNumber)
     .map(mapStep),
+  tag_ids: (recipe.recipeTags ?? [])
+    .slice()
+    .sort((left, right) => left.tag.name.localeCompare(right.tag.name))
+    .map((recipeTag) => recipeTag.tag.id),
   tags: (recipe.recipeTags ?? [])
     .slice()
     .sort((left, right) => left.tag.name.localeCompare(right.tag.name))
-    .map((recipeTag) => recipeTag.tag.name),
+    .map((recipeTag) => mapTag(recipeTag.tag)),
   created_at: recipe.createdAt.toISOString(),
   updated_at: recipe.updatedAt.toISOString(),
 });

@@ -158,6 +158,7 @@ Swagger:
 - writes require authentication
 - `/api/v1/me` is the authenticated profile boundary
 - tags are now explicit resources with `system` and `user` scope
+- recipe writes now use `tag_ids`, and recipe reads return both `tag_ids` and expanded `tags`
 - forking a system recipe creates a user-owned editable copy
 - duplicate forks of the same source recipe are prevented per user
 - `CartDraft` is editable user intent
@@ -212,12 +213,12 @@ This separation is intentional:
 
 The highest-signal next steps are in backend, not frontend expansion.
 
-1. Replace the temporary `x-user-id` development header flow with real auth and a proper `/me` boundary.
-2. Finish ownership hardening and migrate the web app off the temporary `x-user-id` fallback onto bearer tokens.
-3. Decide whether `cuisine` remains lightweight or becomes a controlled taxonomy tied to tags.
-4. Keep retailer integration behind `ShoppingCart` and swap mock matching for a real provider later.
-5. Defer recipe variants and AI-assisted adaptation until auth and tagging are settled.
-6. Add captcha to sensitive auth surfaces after the core auth/client migration is stable.
+1. Migrate the web app off the temporary `x-user-id` fallback onto bearer tokens and remove that fallback from normal protected flows.
+2. Decide whether `cuisine` remains lightweight or becomes a controlled taxonomy tied to tags.
+3. Keep retailer integration behind `ShoppingCart` and swap mock matching for a real provider later.
+4. Defer recipe variants and AI-assisted adaptation until auth and tagging are settled.
+5. Add captcha to sensitive auth surfaces after the core auth/client migration is stable.
+6. Add richer profile and analytics surfaces such as onboarding preferences and `/api/v1/me/stats`.
 
 ## Current Gaps
 
@@ -226,7 +227,6 @@ The highest-signal next steps are in backend, not frontend expansion.
 - Google OAuth backend exists, but the web app does not expose that UX yet
 - there is no onboarding flow for culinary preferences or dietary interests yet
 - `cuisine` is still a free `string`, not a controlled catalog relation
-- recipes still expose `tags: string[]` in their HTTP payloads even though tags are now stored relationally
 - recipe variants and AI-assisted adaptation are not implemented yet
 - retailer matching is still mock data, not a real retailer integration
 
