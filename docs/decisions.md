@@ -426,8 +426,9 @@ Recommended model direction:
 - optional `UserPreference`
 
 Status:
-- not implemented yet
-- this is now the next major backend milestone
+- partially implemented
+- email/password auth, Google backend login, refresh tokens, and `/me` are implemented
+- client migration and full ownership hardening are still in progress
 
 ## 29. Preferences Are Higher-Value Than Demographics For Onboarding
 
@@ -499,6 +500,10 @@ Why:
 - identity management, profile editing, and product stats are different concerns
 - cleaner route boundaries make future policy and ownership rules easier to maintain
 
+Status:
+- auth and `/me` route families are now implemented
+- `/me/stats` remains pending
+
 ## 33. Backend Priorities Now Shift To Auth And Tags
 
 Decision:
@@ -516,3 +521,17 @@ Why:
 - auth and tags affect ownership, filtering, and profile boundaries
 - those changes are cheaper now that the API surface is stable
 - deeper frontend work would otherwise be built on temporary backend assumptions
+
+## 34. Keep `x-user-id` Only As A Temporary Development Fallback
+
+Decision:
+- keep `x-user-id` available only as a temporary development fallback while the web app has not yet migrated to bearer-token auth
+- treat JWT bearer auth as the primary actor resolution path now
+
+Why:
+- backend auth and `/me` already exist and should define the long-term path
+- removing the fallback immediately would slow backend iteration before the client is ready
+- keeping the fallback explicitly temporary avoids accidentally preserving it as a public contract
+
+Exit criteria:
+- once the web app uses bearer tokens end-to-end, remove `x-user-id` from normal protected flows and Swagger guidance

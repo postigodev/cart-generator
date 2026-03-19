@@ -23,6 +23,7 @@ This file is a readable map of those contracts plus the now-implemented conceptu
 - product models: what can be bought
 - shopping-cart models: what will actually be purchased
 - user models: who owns what
+- auth models: how identities and sessions attach to users
 
 ## 1. Recipe Models
 
@@ -389,7 +390,61 @@ type User = {
 Status:
 
 - user records exist in persistence
-- current API auth still uses development header context, not real login/session auth
+- user records are now the ownership root for auth-backed resources
+
+## 8. Auth Models
+
+### AuthProvider
+
+```ts
+type AuthProvider = "google" | "password";
+```
+
+### AuthIdentity
+
+Conceptual implemented shape:
+
+```ts
+type AuthIdentity = {
+  id: string;
+  user_id: string;
+  provider: AuthProvider;
+  provider_subject: string;
+  email: string;
+  email_verified: boolean;
+  password_hash?: string;
+  created_at: string;
+  updated_at: string;
+};
+```
+
+Interpretation:
+
+- `AuthIdentity` links an external or local login method to one `User`
+- one `User` may have multiple identities
+- password auth and Google auth can converge on the same account
+
+### RefreshToken
+
+Conceptual implemented shape:
+
+```ts
+type RefreshToken = {
+  id: string;
+  user_id: string;
+  token_hash: string;
+  expires_at: string;
+  revoked_at?: string;
+  replaced_by_token_id?: string;
+  created_at: string;
+  updated_at: string;
+};
+```
+
+Interpretation:
+
+- refresh tokens are persisted server-side as hashes, not cleartext
+- refresh rotation revokes the previous token and links it to the replacement token
 
 ## Current Model Constraints
 
@@ -398,12 +453,13 @@ Status:
 - system recipes and user-owned recipes are distinct states
 - a user can only have one saved fork per source system recipe
 - one `Cart` is now the parent of persisted `ShoppingCart` snapshots
+- auth can attach multiple identities to one user account
 - tags are still plain `string[]` for now
 
 ## Known Future Changes
 
 - `RecipeVariant` and adaptation models still need runtime implementation
 - tags will likely move from `string[]` to a hybrid shared/private tag model
-- auth will move from `x-user-id` development context to real authentication
+- the web app still needs to migrate from `x-user-id` fallback to bearer-token auth
 - retailer types will expand beyond `"walmart"` once real integrations exist
 - cuisine will likely move from free string to controlled taxonomy

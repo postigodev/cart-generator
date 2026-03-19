@@ -38,6 +38,7 @@ That flow is implemented in the NestJS API under:
 
 ```text
 apps/api/src/
+|-- auth/
 |-- recipe/
 |-- cart/
 |-- aggregation/
@@ -187,7 +188,7 @@ Current status:
 
 ## Current Access Model
 
-The current API uses a development identity header and explicit ownership rules.
+The current API now has real auth plus a temporary development fallback.
 
 Current behavior:
 
@@ -195,13 +196,23 @@ Current behavior:
 - authenticated users can read global recipes plus their own recipes
 - mutable recipe endpoints require authentication
 - drafts and generated shopping results are always user-scoped
+- `/api/v1/me` is the authenticated profile boundary
+- `/api/v1/auth/*` provides register, login, Google login, refresh, and logout
 
-Current development identity:
+Current transitional auth setup:
+
+- JWT access tokens are the primary authenticated path
+- refresh tokens are persisted and rotated
+- `User` is the ownership root
+- `AuthIdentity` stores provider-linked identities
+- `RefreshToken` stores hashed refresh tokens
+
+Temporary development fallback:
 
 - `x-user-id`
 - accepts seeded user id or seeded user email
 
-This is temporary developer auth context, not final authentication architecture.
+This header is still accepted as a temporary development fallback while the web app has not yet migrated to bearer-token auth.
 
 ## Live API Shape
 
@@ -290,6 +301,14 @@ Planned direction:
 - `/me` profile surface
 - role-aware admin behavior
 - proper ownership enforcement without relying on manual headers
+
+Current status:
+
+- email/password auth is implemented
+- Google token login backend is implemented
+- refresh/logout are implemented
+- `/me` is implemented
+- client migration away from `x-user-id` is still pending
 
 ### 3. Hybrid Tags And Controlled Cuisine
 

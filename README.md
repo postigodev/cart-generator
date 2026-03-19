@@ -11,6 +11,7 @@ The backend has already crossed the initial scaffold stage. The API now exposes 
 The NestJS API in [apps/api](/C:/Users/akuma/repos/cart-generator/apps/api) currently supports:
 
 - user and admin identities in the database
+- real auth endpoints for email/password, Google login, refresh, logout, and `/me`
 - global system recipes and user-owned recipes
 - recipe CRUD for user-owned recipes
 - an explicit fork flow for copying a system recipe into a user-owned editable recipe
@@ -153,6 +154,7 @@ Swagger:
 - unauthenticated recipe reads only see global system recipes
 - authenticated users see global recipes plus their own recipes
 - writes require authentication
+- `/api/v1/me` is the authenticated profile boundary
 - forking a system recipe creates a user-owned editable copy
 - duplicate forks of the same source recipe are prevented per user
 - `CartDraft` is editable user intent
@@ -194,6 +196,8 @@ This separation is intentional:
 ## What Changed Recently
 
 - `/api/v1` is now the active internal API contract.
+- auth persistence now includes `AuthIdentity` and `RefreshToken`.
+- `/api/v1/auth/register`, `/login`, `/google`, `/refresh`, `/logout`, and `/me` are implemented.
 - `POST /api/v1/recipe-forks` replaced the old save-style route.
 - `cart-drafts`, `carts`, and `shopping-carts` are separate resources in API, shared models, and database schema.
 - Prisma migration `20260319113000_split_cart_and_shopping_cart_v1` materializes the new `Cart`/`ShoppingCart` split.
@@ -204,18 +208,18 @@ This separation is intentional:
 The highest-signal next steps are in backend, not frontend expansion.
 
 1. Replace the temporary `x-user-id` development header flow with real auth and a proper `/me` boundary.
-2. Add tag modeling beyond `string[]`, with system tags plus user-extensible tagging rules.
-3. Decide whether `cuisine` remains lightweight or becomes a controlled taxonomy tied to tags.
-4. Tighten authorization rules around ownership now that the `v1` surface is stable.
+2. Finish ownership hardening and migrate the web app off the temporary `x-user-id` fallback onto bearer tokens.
+3. Add tag modeling beyond `string[]`, with system tags plus user-extensible tagging rules.
+4. Decide whether `cuisine` remains lightweight or becomes a controlled taxonomy tied to tags.
 5. Keep retailer integration behind `ShoppingCart` and swap mock matching for a real provider later.
 6. Defer recipe variants and AI-assisted adaptation until auth and tagging are settled.
+7. Add captcha to sensitive auth surfaces after the core auth/client migration is stable.
 
 ## Current Gaps
 
 - the web app in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) is still a thin internal dashboard, not a full product UI
-- authentication is still header-based development context, not a real login/session flow
-- there is no real account system yet for Google OAuth, email/password, or phone login
-- there is no `/me` profile surface yet
+- the web app still uses development-style API access and has not yet migrated to bearer-token auth
+- Google OAuth backend exists, but the web app does not expose that UX yet
 - there is no onboarding flow for culinary preferences or dietary interests yet
 - `cuisine` is still a free `string`, not a controlled catalog relation
 - tags are still `string[]` and not yet modeled as hybrid system/user tags
