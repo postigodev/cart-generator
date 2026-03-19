@@ -1,9 +1,16 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/auth.types';
-import { ApiGetMe, ApiMeController, ApiUpdateMe } from './user.swagger';
+import {
+  ApiGetMe,
+  ApiGetMePreferences,
+  ApiMeController,
+  ApiUpdateMe,
+  ApiUpdateMePreferences,
+} from './user.swagger';
 import { UpdateMeDto } from './dto/update-me.dto';
+import { UpdateMePreferencesDto } from './dto/update-me-preferences.dto';
 import { MeService } from './me.service';
 
 @ApiMeController()
@@ -18,6 +25,12 @@ export class MeController {
     return this.meService.getProfile(user.sub);
   }
 
+  @Get('preferences')
+  @ApiGetMePreferences()
+  getPreferences(@CurrentUser() user: AuthenticatedUser) {
+    return this.meService.getPreferences(user.sub);
+  }
+
   @Patch()
   @ApiUpdateMe()
   updateMe(
@@ -25,5 +38,14 @@ export class MeController {
     @Body() input: UpdateMeDto,
   ) {
     return this.meService.updateProfile(user.sub, input);
+  }
+
+  @Put('preferences')
+  @ApiUpdateMePreferences()
+  updatePreferences(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() input: UpdateMePreferencesDto,
+  ) {
+    return this.meService.updatePreferences(user.sub, input);
   }
 }

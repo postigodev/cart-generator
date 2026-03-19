@@ -397,6 +397,26 @@ Status:
 - user records exist in persistence
 - user records are now the ownership root for auth-backed resources
 
+### UserPreferences
+
+Current shape:
+
+```ts
+type UserPreferences = {
+  preferred_cuisine_ids: string[];
+  preferred_cuisines: Cuisine[];
+  preferred_tag_ids: string[];
+  preferred_tags: Tag[];
+};
+```
+
+Interpretation:
+
+- preferences are auth-backed user state
+- cuisines in preferences must exist in the global catalog
+- tags in preferences are currently limited to shared system tags
+- `PUT /api/v1/me/preferences` replaces the full set
+
 ## 8. Auth Models
 
 ### AuthProvider
@@ -523,6 +543,7 @@ Interpretation:
 - auth can attach multiple identities to one user account
 - cuisines are stored relationally as a global catalog
 - tags are stored relationally as `Tag` + `RecipeTag`
+- user preferences are stored relationally through join tables, not JSON blobs
 - recipe HTTP payloads now use explicit tag references instead of `tags: string[]`
 
 ## Known Future Changes

@@ -45,6 +45,8 @@ model User {
   cartDrafts     CartDraft[]
   carts          Cart[]
   shoppingCarts  ShoppingCart[]
+  preferredCuisines UserPreferredCuisine[]
+  preferredTags  UserPreferredTag[]
 }
 
 model AuthIdentity {
@@ -113,6 +115,7 @@ model Cuisine {
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   recipes   BaseRecipe[]
+  preferredByUsers UserPreferredCuisine[]
 
   @@index([kind, label])
 }
@@ -127,10 +130,33 @@ model Tag {
   updatedAt   DateTime    @updatedAt
   owner       User?       @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
   recipeTags  RecipeTag[]
+  preferredByUsers UserPreferredTag[]
 
   @@index([scope, name])
   @@index([scope, slug])
   @@index([ownerUserId, scope, slug])
+}
+
+model UserPreferredCuisine {
+  userId    String
+  cuisineId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cuisine   Cuisine  @relation(fields: [cuisineId], references: [id], onDelete: Cascade)
+
+  @@id([userId, cuisineId])
+  @@index([cuisineId])
+}
+
+model UserPreferredTag {
+  userId    String
+  tagId     String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tagId])
+  @@index([tagId])
 }
 
 model RecipeTag {

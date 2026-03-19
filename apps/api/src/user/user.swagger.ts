@@ -1,12 +1,26 @@
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBadRequestResponse,
   ApiBody,
+  ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import {
+  ErrorResponseDto,
+  UserPreferencesResponseDto,
+} from '../common/http/swagger.dto';
+import {
+  badRequestErrorExample,
+  forbiddenErrorExample,
+  mePreferencesExample,
+  updateMePreferencesRequestExample,
+} from '../common/http/swagger.examples';
 import { UpdateMeDto } from './dto/update-me.dto';
+import { UpdateMePreferencesDto } from './dto/update-me-preferences.dto';
 
 export const ApiMeController = () => applyDecorators(ApiTags('me'));
 
@@ -23,4 +37,94 @@ export const ApiUpdateMe = () =>
     ApiOperation({ summary: 'Update the current authenticated user profile' }),
     ApiBody({ type: UpdateMeDto }),
     ApiOkResponse({ description: 'Returns the updated user profile.' }),
+  );
+
+export const ApiGetMePreferences = () =>
+  applyDecorators(
+    ApiBearerAuth(),
+    ApiOperation({ summary: 'Get the current authenticated user preferences' }),
+    ApiOkResponse({
+      description:
+        'Returns onboarding and preference selections for the authenticated user.',
+      type: UserPreferencesResponseDto,
+      content: {
+        'application/json': {
+          examples: {
+            mePreferences: {
+              summary: 'Current preferences',
+              value: mePreferencesExample,
+            },
+          },
+        },
+      },
+    }),
+    ApiUnauthorizedResponse({
+      description: 'Authentication required',
+      type: ErrorResponseDto,
+    }),
+  );
+
+export const ApiUpdateMePreferences = () =>
+  applyDecorators(
+    ApiBearerAuth(),
+    ApiOperation({ summary: 'Replace the current authenticated user preferences' }),
+    ApiBody({
+      type: UpdateMePreferencesDto,
+      required: true,
+      examples: {
+        replacePreferences: {
+          summary: 'Replace cuisines and tags',
+          value: updateMePreferencesRequestExample,
+        },
+      },
+    }),
+    ApiOkResponse({
+      description: 'Returns the updated preferences.',
+      type: UserPreferencesResponseDto,
+      content: {
+        'application/json': {
+          examples: {
+            updatedPreferences: {
+              summary: 'Updated preferences',
+              value: mePreferencesExample,
+            },
+          },
+        },
+      },
+    }),
+    ApiBadRequestResponse({
+      description: 'Invalid cuisine or tag ids, or duplicate ids.',
+      type: ErrorResponseDto,
+      content: {
+        'application/json': {
+          examples: {
+            invalidPreferences: {
+              summary: 'Validation error',
+              value: badRequestErrorExample,
+            },
+          },
+        },
+      },
+    }),
+    ApiForbiddenResponse({
+      description: 'Only shared system tags are currently allowed in preferences.',
+      type: ErrorResponseDto,
+      content: {
+        'application/json': {
+          examples: {
+            forbiddenTag: {
+              summary: 'User tag not allowed',
+              value: {
+                ...forbiddenErrorExample,
+                message: 'Preferences currently support only shared system tags',
+              },
+            },
+          },
+        },
+      },
+    }),
+    ApiUnauthorizedResponse({
+      description: 'Authentication required',
+      type: ErrorResponseDto,
+    }),
   );

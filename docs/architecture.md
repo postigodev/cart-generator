@@ -310,6 +310,7 @@ Current status:
 - Google token login backend is implemented
 - refresh/logout are implemented
 - `/me` is implemented
+- `/me/preferences` is implemented for cuisine and system-tag preferences
 - client migration away from `x-user-id` is still pending
 
 ### 2. Hybrid Tags And Controlled Cuisine

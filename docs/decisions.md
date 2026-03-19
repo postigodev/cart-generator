@@ -436,6 +436,7 @@ Recommended model direction:
 Status:
 - partially implemented
 - email/password auth, Google backend login, refresh tokens, and `/me` are implemented
+- `/me/preferences` is implemented using explicit cuisine and tag relations
 - client migration and full ownership hardening are still in progress
 
 ## 29. Preferences Are Higher-Value Than Demographics For Onboarding
@@ -458,6 +459,10 @@ Why:
 Implication:
 - onboarding should eventually connect to controlled taxonomies such as cuisines and tags
 - we should avoid anchoring onboarding on raw `string[]` tags long-term
+
+Status:
+- backend preference persistence and `/me/preferences` are implemented
+- onboarding UI is still pending
 
 ## 30. Phone Auth Should Not Be In The First Auth Slice
 

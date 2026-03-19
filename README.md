@@ -12,6 +12,7 @@ The NestJS API in [apps/api](/C:/Users/akuma/repos/cart-generator/apps/api) curr
 
 - user and admin identities in the database
 - real auth endpoints for email/password, Google login, refresh, logout, and `/me`
+- `/api/v1/me/preferences` for auth-backed cuisine and tag preferences
 - a global controlled cuisine catalog exposed at `/api/v1/cuisines`
 - hybrid tags with explicit `/api/v1/tags` endpoints
 - global system recipes and user-owned recipes
@@ -209,6 +210,7 @@ This separation is intentional:
 - tags persistence now includes `Tag` and `RecipeTag`.
 - `/api/v1/auth/register`, `/login`, `/google`, `/refresh`, `/logout`, and `/me` are implemented.
 - `/api/v1/cuisines` now exposes the global cuisine catalog.
+- `/api/v1/me/preferences` now supports read/replace for user cuisine and system-tag preferences.
 - `/api/v1/tags` now supports list/create/update/delete.
 - `POST /api/v1/recipe-forks` replaced the old save-style route.
 - recipes now require `cuisine_id` and return expanded `cuisine` objects.
@@ -222,7 +224,7 @@ This separation is intentional:
 The highest-signal next steps are in backend, not frontend expansion.
 
 1. Migrate the web app off the temporary `x-user-id` fallback onto bearer tokens and remove that fallback from normal protected flows.
-2. Build onboarding and profile preferences on top of explicit `tags` and `cuisines`.
+2. Build the onboarding UI on top of `/api/v1/me/preferences`, `tags`, and `cuisines`.
 3. Keep retailer integration behind `ShoppingCart` and swap mock matching for a real provider later.
 4. Defer recipe variants and AI-assisted adaptation until auth and taxonomy are settled.
 5. Add captcha to sensitive auth surfaces after the core auth/client migration is stable.
@@ -233,7 +235,7 @@ The highest-signal next steps are in backend, not frontend expansion.
 - the web app in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) is still a thin internal dashboard, not a full product UI
 - the web app still uses development-style API access and has not yet migrated to bearer-token auth
 - Google OAuth backend exists, but the web app does not expose that UX yet
-- there is no onboarding flow for culinary preferences or dietary interests yet
+- there is no onboarding UI yet, even though backend preferences now exist
 - recipe variants and AI-assisted adaptation are not implemented yet
 - retailer matching is still mock data, not a real retailer integration
 

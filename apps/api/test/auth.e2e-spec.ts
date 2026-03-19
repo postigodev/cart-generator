@@ -100,6 +100,92 @@ describe('Auth flow (e2e)', () => {
 
     expect(meAfterRefresh.body.email).toBe(email);
 
+    const ensureSystemTag = async (slug: string, name: string) => {
+      const existing = await prisma.tag.findFirst({
+        where: { scope: 'system', slug },
+      });
+
+      if (existing) {
+        return existing;
+      }
+
+      return prisma.tag.create({
+        data: {
+          name,
+          slug,
+          scope: 'system',
+        },
+      });
+    };
+
+    const [peruvianCuisine, mediterraneanCuisine, weeknightTag, comfortFoodTag] =
+      await Promise.all([
+        prisma.cuisine.findUnique({ where: { slug: 'peruvian' } }),
+        prisma.cuisine.findUnique({ where: { slug: 'mediterranean' } }),
+        ensureSystemTag('weeknight', 'Weeknight'),
+        ensureSystemTag('comfort-food', 'Comfort Food'),
+      ]);
+
+    expect(peruvianCuisine).toBeTruthy();
+    expect(mediterraneanCuisine).toBeTruthy();
+    expect(weeknightTag).toBeTruthy();
+    expect(comfortFoodTag).toBeTruthy();
+
+    const updatedPreferences = await request(app.getHttpServer())
+      .put('/api/v1/me/preferences')
+      .set('authorization', `Bearer ${refreshResponse.body.access_token}`)
+      .send({
+        preferred_cuisine_ids: [
+          peruvianCuisine!.id,
+          mediterraneanCuisine!.id,
+        ],
+        preferred_tag_ids: [weeknightTag!.id, comfortFoodTag!.id],
+      })
+      .expect(200);
+
+    expect(updatedPreferences.body).toEqual(
+      expect.objectContaining({
+        preferred_cuisine_ids: expect.arrayContaining([
+          peruvianCuisine!.id,
+          mediterraneanCuisine!.id,
+        ]),
+        preferred_tag_ids: expect.arrayContaining([
+          weeknightTag!.id,
+          comfortFoodTag!.id,
+        ]),
+      }),
+    );
+    expect(updatedPreferences.body.preferred_cuisines).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ slug: 'peruvian' }),
+        expect.objectContaining({ slug: 'mediterranean' }),
+      ]),
+    );
+    expect(updatedPreferences.body.preferred_tags).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ slug: 'weeknight', scope: 'system' }),
+        expect.objectContaining({ slug: 'comfort-food', scope: 'system' }),
+      ]),
+    );
+
+    const fetchedPreferences = await request(app.getHttpServer())
+      .get('/api/v1/me/preferences')
+      .set('authorization', `Bearer ${refreshResponse.body.access_token}`)
+      .expect(200);
+
+    expect(fetchedPreferences.body).toEqual(
+      expect.objectContaining({
+        preferred_cuisine_ids: expect.arrayContaining([
+          peruvianCuisine!.id,
+          mediterraneanCuisine!.id,
+        ]),
+        preferred_tag_ids: expect.arrayContaining([
+          weeknightTag!.id,
+          comfortFoodTag!.id,
+        ]),
+      }),
+    );
+
     await request(app.getHttpServer())
       .post('/api/v1/auth/logout')
       .set('authorization', `Bearer ${refreshResponse.body.access_token}`)
@@ -117,5 +203,43 @@ describe('Auth flow (e2e)', () => {
         refresh_token: refreshResponse.body.refresh_token,
       })
       .expect(401);
+  });
+
+  it('rejects non-system tags in preferences', async () => {
+    const email = `auth-prefs-${Date.now()}@cart-generator.local`;
+    const password = 's3cure-passphrase';
+    createdEmails.push(email);
+
+    const registerResponse = await request(app.getHttpServer())
+      .post('/api/v1/auth/register')
+      .send({
+        email,
+        name: 'Preferences User',
+        password,
+      })
+      .expect(201);
+
+    const [peruvianCuisine, userTag] = await Promise.all([
+      prisma.cuisine.findUnique({ where: { slug: 'peruvian' } }),
+      prisma.tag.create({
+        data: {
+          ownerUserId: (
+            await prisma.user.findUniqueOrThrow({ where: { email } })
+          ).id,
+          name: 'Private Interest',
+          slug: `private-interest-${Date.now()}`,
+          scope: 'user',
+        },
+      }),
+    ]);
+
+    await request(app.getHttpServer())
+      .put('/api/v1/me/preferences')
+      .set('authorization', `Bearer ${registerResponse.body.access_token}`)
+      .send({
+        preferred_cuisine_ids: [peruvianCuisine!.id],
+        preferred_tag_ids: [userTag.id],
+      })
+      .expect(403);
   });
 });

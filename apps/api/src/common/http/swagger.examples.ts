@@ -113,6 +113,39 @@ export const userTagExample = {
   updated_at: '2026-03-19T03:12:00.000Z',
 };
 
+export const mePreferencesExample = {
+  preferred_cuisine_ids: ['cuisine-mediterranean', 'cuisine-peruvian'],
+  preferred_cuisines: [
+    {
+      id: 'cuisine-mediterranean',
+      slug: 'mediterranean',
+      label: 'Mediterranean',
+      kind: 'style',
+      created_at: '2026-03-19T03:12:00.000Z',
+      updated_at: '2026-03-19T03:12:00.000Z',
+    },
+    peruvianCuisineExample,
+  ],
+  preferred_tag_ids: ['tag-system-comfort-food', 'tag-system-weeknight'],
+  preferred_tags: [
+    {
+      id: 'tag-system-comfort-food',
+      owner_user_id: undefined,
+      name: 'Comfort Food',
+      slug: 'comfort-food',
+      scope: 'system',
+      created_at: '2026-03-19T03:12:00.000Z',
+      updated_at: '2026-03-19T03:12:00.000Z',
+    },
+    systemTagExample,
+  ],
+};
+
+export const updateMePreferencesRequestExample = {
+  preferred_cuisine_ids: ['cuisine-peruvian', 'cuisine-mediterranean'],
+  preferred_tag_ids: ['tag-system-weeknight', 'tag-system-comfort-food'],
+};
+
 export const createRecipeRequestExample = {
   name: 'Arroz con pollo casero',
   cuisine_id: 'cuisine-peruvian',

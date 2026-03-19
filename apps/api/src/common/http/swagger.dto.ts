@@ -132,6 +132,20 @@ export class TagResponseDto {
   updated_at!: string;
 }
 
+export class UserPreferencesResponseDto {
+  @ApiProperty({ example: ['cuisine-peruvian', 'cuisine-mediterranean'] })
+  preferred_cuisine_ids!: string[];
+
+  @ApiProperty({ type: () => [CuisineResponseDto] })
+  preferred_cuisines!: CuisineResponseDto[];
+
+  @ApiProperty({ example: ['tag-system-weeknight', 'tag-system-comfort-food'] })
+  preferred_tag_ids!: string[];
+
+  @ApiProperty({ type: () => [TagResponseDto] })
+  preferred_tags!: TagResponseDto[];
+}
+
 export class DishResponseDto {
   @ApiPropertyOptional({ example: 'recipe-1' })
   id?: string;
