@@ -1,14 +1,9 @@
 import type { BaseRecipe, DishIngredient, RecipeStep } from '@cart/shared';
 import type {
-  BaseRecipe as PrismaBaseRecipe,
   DishIngredient as PrismaDishIngredient,
   RecipeStep as PrismaRecipeStep,
 } from '../../generated/prisma/index.js';
-
-type BaseRecipeWithRelations = PrismaBaseRecipe & {
-  ingredients: PrismaDishIngredient[];
-  steps: PrismaRecipeStep[];
-};
+import type { BaseRecipeWithRelations } from './recipe.persistence.types';
 
 const mapIngredient = (ingredient: PrismaDishIngredient): DishIngredient => ({
   canonical_ingredient: ingredient.canonicalIngredient,

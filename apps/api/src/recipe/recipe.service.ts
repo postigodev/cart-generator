@@ -1,11 +1,13 @@
 import {
-  ForbiddenException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import type { BaseRecipe } from '@cart/shared';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
+import {
+  assertMutableRecipeResult,
+  assertVisibleRecipe,
+} from './recipe.errors';
 import { RecipeRepository } from './recipe.repository';
 
 @Injectable()
@@ -25,13 +27,10 @@ export class RecipeService {
   }
 
   async findOne(id: string, actorUserId?: string): Promise<BaseRecipe> {
-    const recipe = await this.recipeRepository.findById(id, actorUserId);
-
-    if (!recipe) {
-      throw new NotFoundException(`Recipe ${id} not found`);
-    }
-
-    return recipe;
+    return assertVisibleRecipe(
+      await this.recipeRepository.findById(id, actorUserId),
+      id,
+    );
   }
 
   async update(
@@ -40,18 +39,11 @@ export class RecipeService {
     actorUserId?: string,
   ): Promise<BaseRecipe> {
     const recipe = await this.recipeRepository.update(id, input, actorUserId);
+    const visibleRecipe = recipe
+      ? recipe
+      : await this.recipeRepository.findById(id, actorUserId);
 
-    if (!recipe) {
-      const visibleRecipe = await this.recipeRepository.findById(id, actorUserId);
-
-      if (visibleRecipe?.is_system_recipe) {
-        throw new ForbiddenException('System recipes cannot be edited');
-      }
-
-      throw new NotFoundException(`Recipe ${id} not found`);
-    }
-
-    return recipe;
+    return assertMutableRecipeResult(recipe, visibleRecipe, id, 'edited')!;
   }
 
   async remove(id: string, actorUserId?: string): Promise<void> {
@@ -59,12 +51,7 @@ export class RecipeService {
 
     if (!deleted) {
       const visibleRecipe = await this.recipeRepository.findById(id, actorUserId);
-
-      if (visibleRecipe?.is_system_recipe) {
-        throw new ForbiddenException('System recipes cannot be deleted');
-      }
-
-      throw new NotFoundException(`Recipe ${id} not found`);
+      assertMutableRecipeResult(null, visibleRecipe, id, 'deleted');
     }
   }
 }

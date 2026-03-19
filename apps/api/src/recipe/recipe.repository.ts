@@ -4,6 +4,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { mapBaseRecipe } from './recipe.mapper';
+import {
+  buildCreateRecipeData,
+  buildOwnedMutableRecipeWhere,
+  buildUpdateRecipeData,
+  buildVisibleRecipeWhere,
+} from './recipe.persistence.mapper';
 import { UserContextService } from '../user/user-context.service';
 
 @Injectable()
@@ -21,33 +27,7 @@ export class RecipeRepository {
     const actor = await this.resolveActorUser(actorUserId);
 
     const recipe = await this.prisma.baseRecipe.create({
-      data: {
-        ownerUserId: actor.id,
-        isSystemRecipe: false,
-        name: input.name,
-        cuisine: input.cuisine,
-        description: input.description,
-        servings: input.servings,
-        tags: input.tags ?? [],
-        ingredients: {
-          create: input.ingredients.map((ingredient, index) => ({
-            canonicalIngredient: ingredient.canonical_ingredient,
-            amount: ingredient.amount,
-            unit: ingredient.unit,
-            displayIngredient: ingredient.display_ingredient,
-            preparation: ingredient.preparation,
-            optional: ingredient.optional ?? false,
-            ingredientGroup: ingredient.group,
-            sortOrder: index,
-          })),
-        },
-        steps: {
-          create: input.steps.map((step) => ({
-            stepNumber: step.step,
-            whatToDo: step.what_to_do,
-          })),
-        },
-      },
+      data: buildCreateRecipeData(input, actor.id),
       include: {
         ingredients: true,
         steps: true,
@@ -62,7 +42,7 @@ export class RecipeRepository {
 
     const recipes = await this.prisma.baseRecipe.findMany({
       where: {
-        OR: [{ isSystemRecipe: true }, { ownerUserId: actor.id }],
+        ...buildVisibleRecipeWhere(actor.id),
       },
       include: {
         ingredients: true,
@@ -82,7 +62,7 @@ export class RecipeRepository {
     const recipe = await this.prisma.baseRecipe.findFirst({
       where: {
         id,
-        OR: [{ isSystemRecipe: true }, { ownerUserId: actor.id }],
+        ...buildVisibleRecipeWhere(actor.id),
       },
       include: {
         ingredients: true,
@@ -102,7 +82,7 @@ export class RecipeRepository {
     const recipes = await this.prisma.baseRecipe.findMany({
       where: {
         id: { in: ids },
-        OR: [{ isSystemRecipe: true }, { ownerUserId: actor.id }],
+        ...buildVisibleRecipeWhere(actor.id),
       },
       include: {
         ingredients: true,
@@ -120,11 +100,7 @@ export class RecipeRepository {
   ): Promise<BaseRecipe | null> {
     const actor = await this.resolveActorUser(actorUserId);
     const existing = await this.prisma.baseRecipe.findFirst({
-      where: {
-        id,
-        ownerUserId: actor.id,
-        isSystemRecipe: false,
-      },
+      where: buildOwnedMutableRecipeWhere(id, actor.id),
       include: {
         ingredients: true,
         steps: true,
@@ -137,41 +113,7 @@ export class RecipeRepository {
 
     const recipe = await this.prisma.baseRecipe.update({
       where: { id },
-      data: {
-        name: input.name,
-        cuisine: input.cuisine,
-        description: input.description,
-        servings: input.servings,
-        tags: input.tags,
-        ...(input.ingredients
-          ? {
-              ingredients: {
-                deleteMany: {},
-                create: input.ingredients.map((ingredient, index) => ({
-                  canonicalIngredient: ingredient.canonical_ingredient,
-                  amount: ingredient.amount,
-                  unit: ingredient.unit,
-                  displayIngredient: ingredient.display_ingredient,
-                  preparation: ingredient.preparation,
-                  optional: ingredient.optional ?? false,
-                  ingredientGroup: ingredient.group,
-                  sortOrder: index,
-                })),
-              },
-            }
-          : {}),
-        ...(input.steps
-          ? {
-              steps: {
-                deleteMany: {},
-                create: input.steps.map((step) => ({
-                  stepNumber: step.step,
-                  whatToDo: step.what_to_do,
-                })),
-              },
-            }
-          : {}),
-      },
+      data: buildUpdateRecipeData(input),
       include: {
         ingredients: true,
         steps: true,
@@ -184,11 +126,7 @@ export class RecipeRepository {
   async delete(id: string, actorUserId?: string): Promise<boolean> {
     const actor = await this.resolveActorUser(actorUserId);
     const existing = await this.prisma.baseRecipe.findFirst({
-      where: {
-        id,
-        ownerUserId: actor.id,
-        isSystemRecipe: false,
-      },
+      where: buildOwnedMutableRecipeWhere(id, actor.id),
       select: { id: true },
     });
 
