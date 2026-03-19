@@ -21,4 +21,12 @@ export class RequestContextService {
   getActorUserId(): string | undefined {
     return this.getContext()?.actorUserId;
   }
+
+  setActorUserId(actorUserId: string): void {
+    const context = this.getContext();
+
+    if (context) {
+      context.actorUserId = actorUserId;
+    }
+  }
 }

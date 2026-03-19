@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AggregationModule } from './aggregation/aggregation.module';
+import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { CommonHttpModule } from './common/http/common-http.module';
 import { MatchingModule } from './matching/matching.module';
@@ -13,6 +14,7 @@ import { UserModule } from './user/user.module';
   imports: [
     CommonHttpModule,
     PrismaModule,
+    AuthModule,
     UserModule,
     RecipeModule,
     AggregationModule,

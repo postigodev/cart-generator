@@ -3,12 +3,15 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   HttpCode,
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { RequestActorGuard } from '../auth/request-actor.guard';
+import type { AuthenticatedUser } from '../auth/auth.types';
 import {
   ApiCartController,
   ApiCreateCart,
@@ -38,135 +41,149 @@ export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @Post('cart-drafts')
+  @UseGuards(RequestActorGuard)
   @ApiCartController('cart-drafts')
   @ApiCreateCartDraft()
   createDraft(
     @Body() input: CreateCartDraftDto,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.cartService.createDraft(input, actorUserId);
+    return this.cartService.createDraft(input, user.sub);
   }
 
   @Patch('cart-drafts/:id')
+  @UseGuards(RequestActorGuard)
   @ApiCartController('cart-drafts')
   @ApiUpdateCartDraft()
   updateDraft(
     @Param('id') id: string,
     @Body() input: UpdateCartDraftDto,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.cartService.updateDraft(id, input, actorUserId);
+    return this.cartService.updateDraft(id, input, user.sub);
   }
 
   @Delete('cart-drafts/:id')
+  @UseGuards(RequestActorGuard)
   @HttpCode(204)
   @ApiCartController('cart-drafts')
   @ApiDeleteCartDraft()
   async removeDraft(
     @Param('id') id: string,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    await this.cartService.removeDraft(id, actorUserId);
+    await this.cartService.removeDraft(id, user.sub);
   }
 
   @Get('cart-drafts')
+  @UseGuards(RequestActorGuard)
   @ApiCartController('cart-drafts')
   @ApiListCartDrafts()
-  listDrafts(@Headers('x-user-id') actorUserId?: string) {
-    return this.cartService.listDrafts(actorUserId);
+  listDrafts(@CurrentUser() user: AuthenticatedUser) {
+    return this.cartService.listDrafts(user.sub);
   }
 
   @Get('cart-drafts/:id')
+  @UseGuards(RequestActorGuard)
   @ApiCartController('cart-drafts')
   @ApiGetCartDraft()
   findDraft(
     @Param('id') id: string,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.cartService.findDraft(id, actorUserId);
+    return this.cartService.findDraft(id, user.sub);
   }
 
   @Post('carts')
+  @UseGuards(RequestActorGuard)
   @ApiCartController('carts')
   @ApiCreateCart()
   createCart(
     @Body() input: CreateCartDto,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.cartService.createCart(input, actorUserId);
+    return this.cartService.createCart(input, user.sub);
   }
 
   @Patch('carts/:id')
+  @UseGuards(RequestActorGuard)
   @ApiCartController('carts')
   @ApiUpdateCart()
   updateCart(
     @Param('id') id: string,
     @Body() input: UpdateCartDto,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.cartService.updateCart(id, input, actorUserId);
+    return this.cartService.updateCart(id, input, user.sub);
   }
 
   @Delete('carts/:id')
+  @UseGuards(RequestActorGuard)
   @HttpCode(204)
   @ApiCartController('carts')
   @ApiDeleteCart()
   async removeCart(
     @Param('id') id: string,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    await this.cartService.removeCart(id, actorUserId);
+    await this.cartService.removeCart(id, user.sub);
   }
 
   @Get('carts')
+  @UseGuards(RequestActorGuard)
   @ApiCartController('carts')
   @ApiListCarts()
-  listCarts(@Headers('x-user-id') actorUserId?: string) {
-    return this.cartService.listCarts(actorUserId);
+  listCarts(@CurrentUser() user: AuthenticatedUser) {
+    return this.cartService.listCarts(user.sub);
   }
 
   @Get('carts/:id')
+  @UseGuards(RequestActorGuard)
   @ApiCartController('carts')
   @ApiGetCart()
   findCart(
     @Param('id') id: string,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.cartService.findCart(id, actorUserId);
+    return this.cartService.findCart(id, user.sub);
   }
 
   @Post('carts/:cartId/shopping-carts')
+  @UseGuards(RequestActorGuard)
   @ApiCartController('shopping-carts')
   @ApiCreateShoppingCart()
   createShoppingCart(
     @Param('cartId') cartId: string,
     @Body() input: CreateShoppingCartDto,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.cartService.createShoppingCart(cartId, input, actorUserId);
+    return this.cartService.createShoppingCart(cartId, input, user.sub);
   }
 
   @Get('shopping-carts/history')
+  @UseGuards(RequestActorGuard)
   @ApiCartController('shopping-carts')
   @ApiListShoppingCartHistory()
-  listShoppingCartHistory(@Headers('x-user-id') actorUserId?: string) {
-    return this.cartService.listShoppingCartHistory(actorUserId);
+  listShoppingCartHistory(@CurrentUser() user: AuthenticatedUser) {
+    return this.cartService.listShoppingCartHistory(user.sub);
   }
 
   @Get('shopping-carts')
+  @UseGuards(RequestActorGuard)
   @ApiCartController('shopping-carts')
   @ApiListShoppingCarts()
-  listShoppingCarts(@Headers('x-user-id') actorUserId?: string) {
-    return this.cartService.listShoppingCarts(actorUserId);
+  listShoppingCarts(@CurrentUser() user: AuthenticatedUser) {
+    return this.cartService.listShoppingCarts(user.sub);
   }
 
   @Get('shopping-carts/:id')
+  @UseGuards(RequestActorGuard)
   @ApiCartController('shopping-carts')
   @ApiGetShoppingCart()
   findShoppingCart(
     @Param('id') id: string,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.cartService.findShoppingCart(id, actorUserId);
+    return this.cartService.findShoppingCart(id, user.sub);
   }
 }

@@ -3,13 +3,19 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   HttpCode,
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import type { BaseRecipe } from '@cart/shared';
+import { CurrentUser } from '../auth/current-user.decorator';
+import {
+  OptionalRequestActorGuard,
+  RequestActorGuard,
+} from '../auth/request-actor.guard';
+import type { AuthenticatedUser } from '../auth/auth.types';
 import {
   ApiCreateRecipe,
   ApiDeleteRecipe,
@@ -29,55 +35,61 @@ export class RecipeController {
   constructor(private readonly recipeService: RecipeService) {}
 
   @Post()
+  @UseGuards(RequestActorGuard)
   @ApiCreateRecipe()
   create(
     @Body() input: CreateRecipeDto,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<BaseRecipe> {
-    return this.recipeService.create(input, actorUserId);
+    return this.recipeService.create(input, user.sub);
   }
 
   @Get()
+  @UseGuards(OptionalRequestActorGuard)
   @ApiListRecipes()
-  findAll(@Headers('x-user-id') actorUserId?: string): Promise<BaseRecipe[]> {
-    return this.recipeService.findAll(actorUserId);
+  findAll(@CurrentUser() user?: AuthenticatedUser): Promise<BaseRecipe[]> {
+    return this.recipeService.findAll(user?.sub);
   }
 
   @Get(':id/origin')
+  @UseGuards(OptionalRequestActorGuard)
   @ApiGetRecipeOrigin()
   findOrigin(
     @Param('id') id: string,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user?: AuthenticatedUser,
   ): Promise<BaseRecipe> {
-    return this.recipeService.findOrigin(id, actorUserId);
+    return this.recipeService.findOrigin(id, user?.sub);
   }
 
   @Get(':id')
+  @UseGuards(OptionalRequestActorGuard)
   @ApiGetRecipe()
   findOne(
     @Param('id') id: string,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user?: AuthenticatedUser,
   ): Promise<BaseRecipe> {
-    return this.recipeService.findOne(id, actorUserId);
+    return this.recipeService.findOne(id, user?.sub);
   }
 
   @Patch(':id')
+  @UseGuards(RequestActorGuard)
   @ApiUpdateRecipe()
   update(
     @Param('id') id: string,
     @Body() input: UpdateRecipeDto,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<BaseRecipe> {
-    return this.recipeService.update(id, input, actorUserId);
+    return this.recipeService.update(id, input, user.sub);
   }
 
   @Delete(':id')
+  @UseGuards(RequestActorGuard)
   @HttpCode(204)
   @ApiDeleteRecipe()
   async remove(
     @Param('id') id: string,
-    @Headers('x-user-id') actorUserId?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<void> {
-    await this.recipeService.remove(id, actorUserId);
+    await this.recipeService.remove(id, user.sub);
   }
 }

@@ -81,6 +81,13 @@ describe('AppController (e2e)', () => {
       .useValue({
         $connect: jest.fn(),
         enableShutdownHooks: jest.fn(),
+        user: {
+          findUnique: jest.fn(async ({ where }: { where: { id?: string; email?: string } }) => ({
+            id: where.id ?? 'user-1',
+            email: where.email ?? 'user-1@cart-generator.local',
+            role: 'user',
+          })),
+        },
       })
       .overrideProvider(RecipeService)
       .useValue(recipeService)

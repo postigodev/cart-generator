@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AggregationModule } from '../aggregation/aggregation.module';
+import { AuthModule } from '../auth/auth.module';
 import { MatchingModule } from '../matching/matching.module';
 import { RecipeModule } from '../recipe/recipe.module';
 import { UserModule } from '../user/user.module';
@@ -9,7 +10,7 @@ import { CartPersistenceRepository } from './persistence/cart.persistence.reposi
 import { CartService } from './cart.service';
 
 @Module({
-  imports: [RecipeModule, AggregationModule, MatchingModule, UserModule],
+  imports: [AuthModule, RecipeModule, AggregationModule, MatchingModule, UserModule],
   controllers: [CartController],
   providers: [CartService, CartPersistenceService, CartPersistenceRepository],
 })

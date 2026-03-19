@@ -26,7 +26,11 @@ export class RequestContextMiddleware implements NestMiddleware {
     this.requestContextService.run({ requestId, actorUserId }, () => {
       res.on('finish', () => {
         const durationMs = Date.now() - startedAt;
-        const actorSuffix = actorUserId ? ` actor=${actorUserId}` : '';
+        const resolvedActorUserId =
+          this.requestContextService.getActorUserId() ?? actorUserId;
+        const actorSuffix = resolvedActorUserId
+          ? ` actor=${resolvedActorUserId}`
+          : '';
         this.logger.log(
           `[${requestId}] ${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs}ms${actorSuffix}`,
         );
