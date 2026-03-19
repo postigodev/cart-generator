@@ -1,7 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { RequestContextService } from '../common/http/request-context.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { DEFAULT_DEV_USER_EMAIL } from './user-context.constants';
 
 @Injectable()
 export class UserContextService {
@@ -11,14 +14,23 @@ export class UserContextService {
   ) {}
 
   async resolveActorUser(actorUserId?: string): Promise<{ id: string }> {
+    const actor = await this.resolveOptionalActorUser(actorUserId);
+
+    if (!actor) {
+      throw new UnauthorizedException('Authentication required');
+    }
+
+    return actor;
+  }
+
+  async resolveOptionalActorUser(
+    actorUserId?: string,
+  ): Promise<{ id: string } | null> {
     const resolvedActorUserId =
       actorUserId ?? this.requestContextService.getActorUserId();
 
     if (resolvedActorUserId) {
-      const actor = await this.prisma.user.findUnique({
-        where: { id: resolvedActorUserId },
-        select: { id: true },
-      });
+      const actor = await this.findActorUser(resolvedActorUserId);
 
       if (!actor) {
         throw new NotFoundException(`User ${resolvedActorUserId} not found`);
@@ -27,17 +39,18 @@ export class UserContextService {
       return actor;
     }
 
-    const defaultActor = await this.prisma.user.findUnique({
-      where: { email: DEFAULT_DEV_USER_EMAIL },
+    return null;
+  }
+
+  private findActorUser(actorIdentifier: string) {
+    const normalizedIdentifier = actorIdentifier.trim();
+    const where = normalizedIdentifier.includes('@')
+      ? { email: normalizedIdentifier }
+      : { id: normalizedIdentifier };
+
+    return this.prisma.user.findUnique({
+      where,
       select: { id: true },
     });
-
-    if (!defaultActor) {
-      throw new NotFoundException(
-        `Default dev user ${DEFAULT_DEV_USER_EMAIL} not found`,
-      );
-    }
-
-    return defaultActor;
   }
 }

@@ -63,9 +63,15 @@ export const buildUpdateRecipeData = (input: UpdateRecipeDto) => ({
     : {}),
 });
 
-export const buildVisibleRecipeWhere = (actorId: string) => ({
-  OR: [{ isSystemRecipe: true }, { ownerUserId: actorId }],
-});
+export const buildVisibleRecipeWhere = (actorId?: string) =>
+  actorId
+    ? {
+        OR: [{ isSystemRecipe: true }, { ownerUserId: actorId }],
+      }
+    : {
+        isSystemRecipe: true,
+        ownerUserId: null,
+      };
 
 export const buildOwnedMutableRecipeWhere = (id: string, actorId: string) => ({
   id,

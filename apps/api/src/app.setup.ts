@@ -36,7 +36,7 @@ export const configureApp = (app: INestApplication): void => {
         in: 'header',
         name: DEV_USER_ID_HEADER,
         description:
-          'Optional dev-only actor override header. Example: user-1',
+          'Optional dev-only actor override header. Accepts a user id or email. Example: postigodev@cart-generator.local',
       },
       DEV_USER_ID_HEADER,
     )

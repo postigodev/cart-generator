@@ -160,3 +160,114 @@ Decision:
 
 Why:
 - the MVP still needs a working vertical slice
+
+## 16. System Recipes Are Global and Immutable
+
+Decision:
+- `isSystemRecipe = true` means a recipe is global catalog content, not user-owned content
+- the intended invariant is:
+  - system recipe -> `ownerUserId = null`
+  - user recipe -> `ownerUserId != null`
+
+Why:
+- avoids contradictory ownership semantics
+- makes visibility and edit rules easier to reason about
+
+Note:
+- if a system recipe appears with an owner, that should be treated as bad data or a migration issue, not valid long-term state
+
+## 17. User-Created Recipes Are Private By Default
+
+Decision:
+- `POST /recipes` should create recipes visible only to the owning user
+- other users should not see those recipes unless an explicit sharing model is introduced later
+
+Why:
+- privacy is the safer default
+- most user-authored recipes are personal working data
+- public sharing needs its own product decisions and moderation rules
+
+Implication:
+- for API testing and future auth flows, we should think in at least four personas:
+  - authenticated user A
+  - authenticated user B
+  - authenticated admin
+  - unauthenticated user
+
+## 18. Saving a System Recipe Should Create an Editable User Copy
+
+Decision:
+- do not allow direct editing of system recipes
+- instead add a future `save recipe` or `fork recipe` flow that copies a system recipe into the user's editable library
+
+Suggested shape:
+- `POST /recipes/:id/save`
+- resulting record is:
+  - `isSystemRecipe = false`
+  - `ownerUserId = currentUserId`
+  - optionally `forkedFromRecipeId = originalSystemRecipeId`
+
+Why:
+- preserves catalog integrity
+- lets users customize recipes freely
+- creates a clean boundary between canonical content and personal content
+
+## 19. Recipe Steps Stay Normalized
+
+Decision:
+- keep steps in a separate `RecipeStep` table
+- `PATCH /recipes/:id` should continue accepting `steps`, but as full-array replacement for now
+
+Why:
+- step order matters
+- steps are structured content, not a scalar field
+- future step-level editing is easier from a normalized model than from a single column blob
+
+Not recommended:
+- moving steps into a single JSON/text column just for update convenience
+
+## 20. Tags Should Become Hybrid, Not Just String Arrays
+
+Decision:
+- the current `String[]` tags column is acceptable for MVP seeding and filtering
+- the longer-term model should move to hybrid tags with explicit scope
+
+Recommended direction:
+- `Tag`
+  - `id`
+  - `name`
+  - `slug`
+  - `scope: system | user`
+  - `ownerUserId?`
+- `RecipeTag`
+  - `recipeId`
+  - `tagId`
+
+Interpretation:
+- system tags are shared taxonomy for everyone
+- user tags are private organizational labels unless we later introduce sharing
+
+Why:
+- tags need better deduplication and filtering than raw strings
+- shared taxonomy and private organization are different concerns
+- hybrid tags support both discovery and personal workflow
+
+## 21. Replace Boolean Ownership Semantics With Clearer States Later
+
+Decision:
+- `isSystemRecipe` is acceptable for the MVP, but it is not expressive enough for the long term
+
+Likely future states:
+- system catalog recipe
+- user-authored recipe
+- user-saved copy of system recipe
+- possibly shared/public user recipe later
+
+Why:
+- a single boolean creates awkward edge cases
+- the data model should eventually reflect origin and visibility more explicitly
+
+Pragmatic path:
+- keep the boolean short-term
+- add `forkedFromRecipeId` when we implement save/fork
+- revisit a richer enum-based model only when those states become real

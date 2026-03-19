@@ -54,10 +54,13 @@ The Swagger UI includes:
 The API currently supports a development-only actor override header:
 
 ```text
-x-user-id: user-1
+x-user-id: postigodev@cart-generator.local
 ```
 
-If `x-user-id` is omitted, the backend falls back to the seeded dev user.
+If `x-user-id` is omitted:
+
+- read-only recipe listing should behave as unauthenticated access and only expose global system recipes
+- user-owned operations should fail with `401 Authentication required`
 
 Every response also includes:
 
@@ -108,7 +111,7 @@ pnpm start:dev
 List visible recipes:
 
 ```bash
-curl -H "x-user-id: user-1" http://localhost:3001/recipes
+curl -H "x-user-id: postigodev@cart-generator.local" http://localhost:3001/recipes
 ```
 
 Create a recipe:
@@ -116,7 +119,7 @@ Create a recipe:
 ```bash
 curl -X POST http://localhost:3001/recipes ^
   -H "Content-Type: application/json" ^
-  -H "x-user-id: user-1" ^
+  -H "x-user-id: postigodev@cart-generator.local" ^
   -d "{\"name\":\"Arroz con pollo casero\",\"cuisine\":\"Peruvian\",\"description\":\"Comforting chicken and rice dish.\",\"servings\":4,\"ingredients\":[{\"canonical_ingredient\":\"rice\",\"amount\":2,\"unit\":\"cup\"},{\"canonical_ingredient\":\"chicken thigh\",\"amount\":800,\"unit\":\"g\"}],\"steps\":[{\"step\":1,\"what_to_do\":\"Brown the chicken thighs.\"}],\"tags\":[\"dinner\"]}"
 ```
 
@@ -125,7 +128,7 @@ Generate a cart:
 ```bash
 curl -X POST http://localhost:3001/cart/generate ^
   -H "Content-Type: application/json" ^
-  -H "x-user-id: user-1" ^
+  -H "x-user-id: postigodev@cart-generator.local" ^
   -H "x-request-id: req-local-123" ^
   -d "{\"selections\":[{\"recipe_id\":\"recipe-1\",\"recipe_type\":\"base\",\"quantity\":2,\"servings_override\":4}],\"retailer\":\"walmart\"}"
 ```
@@ -133,7 +136,7 @@ curl -X POST http://localhost:3001/cart/generate ^
 Get generated cart history:
 
 ```bash
-curl -H "x-user-id: user-1" http://localhost:3001/cart/generated/history
+curl -H "x-user-id: postigodev@cart-generator.local" http://localhost:3001/cart/generated/history
 ```
 
 ## Tests

@@ -41,6 +41,15 @@ async function upsertRecipe(prisma, recipe, ownership) {
 }
 
 async function seedRecipes(prisma, devUserId) {
+  await prisma.baseRecipe.updateMany({
+    where: {
+      isSystemRecipe: true,
+    },
+    data: {
+      ownerUserId: null,
+    },
+  });
+
   await prisma.baseRecipe.deleteMany({
     where: {
       ownerUserId: null,

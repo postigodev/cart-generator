@@ -8,7 +8,7 @@ export const ApiDevUserHeader = () =>
     ApiHeader({
       name: DEV_USER_ID_HEADER,
       required: false,
-      description: 'Optional dev-only actor override header.',
-      example: 'user-1',
+      description: 'Optional dev-only actor override header. Accepts a user id or email.',
+      example: 'postigodev@cart-generator.local',
     }),
   );

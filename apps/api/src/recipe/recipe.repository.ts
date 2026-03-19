@@ -19,6 +19,12 @@ export class RecipeRepository {
     private readonly userContextService: UserContextService,
   ) {}
 
+  private resolveOptionalActorUser(
+    actorUserId?: string,
+  ): Promise<{ id: string } | null> {
+    return this.userContextService.resolveOptionalActorUser(actorUserId);
+  }
+
   private resolveActorUser(actorUserId?: string): Promise<{ id: string }> {
     return this.userContextService.resolveActorUser(actorUserId);
   }
@@ -38,12 +44,10 @@ export class RecipeRepository {
   }
 
   async findMany(actorUserId?: string): Promise<BaseRecipe[]> {
-    const actor = await this.resolveActorUser(actorUserId);
+    const actor = await this.resolveOptionalActorUser(actorUserId);
 
     const recipes = await this.prisma.baseRecipe.findMany({
-      where: {
-        ...buildVisibleRecipeWhere(actor.id),
-      },
+      where: buildVisibleRecipeWhere(actor?.id),
       include: {
         ingredients: true,
         steps: true,
@@ -57,12 +61,12 @@ export class RecipeRepository {
   }
 
   async findById(id: string, actorUserId?: string): Promise<BaseRecipe | null> {
-    const actor = await this.resolveActorUser(actorUserId);
+    const actor = await this.resolveOptionalActorUser(actorUserId);
 
     const recipe = await this.prisma.baseRecipe.findFirst({
       where: {
         id,
-        ...buildVisibleRecipeWhere(actor.id),
+        ...buildVisibleRecipeWhere(actor?.id),
       },
       include: {
         ingredients: true,
@@ -77,12 +81,12 @@ export class RecipeRepository {
     ids: string[],
     actorUserId?: string,
   ): Promise<BaseRecipe[]> {
-    const actor = await this.resolveActorUser(actorUserId);
+    const actor = await this.resolveOptionalActorUser(actorUserId);
 
     const recipes = await this.prisma.baseRecipe.findMany({
       where: {
         id: { in: ids },
-        ...buildVisibleRecipeWhere(actor.id),
+        ...buildVisibleRecipeWhere(actor?.id),
       },
       include: {
         ingredients: true,
