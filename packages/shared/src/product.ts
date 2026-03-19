@@ -24,6 +24,8 @@ export type MatchedIngredientProduct = {
   canonical_ingredient: string;
   needed_amount: number;
   needed_unit: string;
+  matched_amount?: number;
+  matched_unit?: string;
   purchase_unit_hint?: string;
   walmart_search_query: string;
   selected_product: ProductCandidate | null;

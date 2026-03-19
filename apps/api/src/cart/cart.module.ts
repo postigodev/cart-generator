@@ -2,12 +2,14 @@ import { Module } from '@nestjs/common';
 import { AggregationModule } from '../aggregation/aggregation.module';
 import { MatchingModule } from '../matching/matching.module';
 import { RecipeModule } from '../recipe/recipe.module';
+import { UserModule } from '../user/user.module';
 import { CartController } from './cart.controller';
+import { CartPersistenceService } from './cart.persistence';
 import { CartService } from './cart.service';
 
 @Module({
-  imports: [RecipeModule, AggregationModule, MatchingModule],
+  imports: [RecipeModule, AggregationModule, MatchingModule, UserModule],
   controllers: [CartController],
-  providers: [CartService],
+  providers: [CartService, CartPersistenceService],
 })
 export class CartModule {}

@@ -3,11 +3,15 @@ import type { BaseRecipe } from '@cart/shared';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { MatchingService } from '../matching/matching.service';
 import { RecipeService } from '../recipe/recipe.service';
+import { UserContextService } from '../user/user-context.service';
+import { CartPersistenceService } from './cart.persistence';
 import { CartService } from './cart.service';
 
 describe('CartService', () => {
   let service: CartService;
   let recipeService: jest.Mocked<RecipeService>;
+  let userContextService: jest.Mocked<UserContextService>;
+  let cartPersistenceService: jest.Mocked<CartPersistenceService>;
 
   const recipe: BaseRecipe = {
     id: 'recipe-1',
@@ -43,10 +47,44 @@ describe('CartService', () => {
       findOne: jest.fn(),
     } as unknown as jest.Mocked<RecipeService>;
 
+    userContextService = {
+      resolveActorUser: jest.fn().mockResolvedValue({ id: 'user-1' }),
+    } as unknown as jest.Mocked<UserContextService>;
+
+    cartPersistenceService = {
+      createDraft: jest.fn().mockResolvedValue({
+        id: 'draft-1',
+        user_id: 'user-1',
+        selections: [],
+        retailer: 'walmart',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }),
+      createGeneratedCart: jest.fn().mockResolvedValue({
+        id: 'cart-1',
+        user_id: 'user-1',
+        cart_draft_id: 'draft-1',
+        dishes: [],
+        overview: [],
+        matched_items: [],
+        estimated_subtotal: 0,
+        retailer: 'walmart',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }),
+      findDraftsByUser: jest.fn(),
+      findDraftById: jest.fn(),
+      findGeneratedCartsByUser: jest.fn(),
+      findGeneratedCartHistoryByUser: jest.fn(),
+      findGeneratedCartById: jest.fn(),
+    } as unknown as jest.Mocked<CartPersistenceService>;
+
     service = new CartService(
       recipeService,
       new AggregationService(),
       new MatchingService(),
+      cartPersistenceService,
+      userContextService,
     );
   });
 
@@ -90,6 +128,36 @@ describe('CartService', () => {
       }),
     ]);
     expect(result.estimated_subtotal).toBe(19.9);
+    expect(cartPersistenceService.createDraft).toHaveBeenCalledTimes(1);
+    expect(cartPersistenceService.createGeneratedCart).toHaveBeenCalledTimes(1);
+  });
+
+  it('lists generated cart history summaries', async () => {
+    cartPersistenceService.findGeneratedCartHistoryByUser = jest
+      .fn()
+      .mockResolvedValue([
+        {
+          id: 'cart-1',
+          user_id: 'user-1',
+          retailer: 'walmart',
+          estimated_subtotal: 19.9,
+          dish_count: 2,
+          overview_count: 2,
+          matched_item_count: 2,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ]);
+
+    const result = await service.listGeneratedHistory();
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        id: 'cart-1',
+        estimated_subtotal: 19.9,
+        dish_count: 2,
+      }),
+    ]);
   });
 
   it('scales servings_override before aggregation', async () => {

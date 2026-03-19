@@ -6,10 +6,12 @@ import { CartModule } from './cart/cart.module';
 import { MatchingModule } from './matching/matching.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RecipeModule } from './recipe/recipe.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
     PrismaModule,
+    UserModule,
     RecipeModule,
     AggregationModule,
     MatchingModule,
