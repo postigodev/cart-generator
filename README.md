@@ -159,6 +159,7 @@ Swagger:
 
 - the web app in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) is still not a real product UI
 - authentication is still header-based development context, not a real login/session flow
+- `cuisine` is still a free `string`, not a controlled catalog relation
 - tags are still `string[]` and not yet modeled as hybrid system/user tags
 - recipe variants and AI-assisted adaptation are not implemented yet
 - retailer matching is still mock data, not a real retailer integration
@@ -167,6 +168,7 @@ Swagger:
 
 1. Build the minimal web flow in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) for recipes, selection, and generated cart results.
 2. Replace dev header identity with real authentication.
-3. Normalize tags into a richer shared/private model.
-4. Add recipe variants and AI-assisted adaptation on top of the current deterministic base.
-5. Replace mock matching with a real retailer integration.
+3. Replace free `cuisine: string` with a controlled cuisine catalog relation and migration path.
+4. Normalize tags into a richer shared/private model.
+5. Add recipe variants and AI-assisted adaptation on top of the current deterministic base.
+6. Replace mock matching with a real retailer integration.

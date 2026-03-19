@@ -306,3 +306,45 @@ Why:
 - avoids duplicate user copies of the same source recipe
 - makes the save action safe to repeat
 - protects against races between concurrent requests
+
+## 24. Cuisine Should Be A Controlled Taxonomy, Not A Free String
+
+Decision:
+- keep `cuisine` as a separate concept from `tags`
+- do not reduce cuisine to gentilicios only
+- do not keep cuisine as an unconstrained free-form string long-term
+
+Interpretation:
+- `cuisine` is a curated culinary taxonomy used for discovery and filtering
+- valid cuisines may represent different levels such as:
+  - national
+  - regional
+  - cultural
+  - style
+
+Examples:
+- `Peruvian`
+- `Middle Eastern`
+- `East African`
+- `Tex-Mex`
+- `Mediterranean`
+
+Why:
+- cuisine and tags solve different UX problems
+- cuisine is a primary classification axis
+- tags are flexible secondary labels
+- a free string leads to inconsistent values and bad filters
+
+Recommended direction:
+- move from `cuisine: string` to a controlled `Cuisine` catalog
+- likely model:
+  - `id`
+  - `slug`
+  - `label`
+  - `kind: national | regional | cultural | style`
+- recipes should eventually reference cuisine by relation rather than free text
+
+Pragmatic path:
+- keep the current string short-term
+- document the migration target now
+- update `models` and `architecture` only when the schema and shared contracts actually change
