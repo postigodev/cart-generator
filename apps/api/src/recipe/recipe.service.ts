@@ -15,6 +15,10 @@ export class RecipeService {
     return this.recipeRepository.findMany(actorUserId);
   }
 
+  findManyByIds(ids: string[], actorUserId?: string): Promise<BaseRecipe[]> {
+    return this.recipeRepository.findManyByIds(ids, actorUserId);
+  }
+
   async findOne(id: string, actorUserId?: string): Promise<BaseRecipe> {
     const recipe = await this.recipeRepository.findById(id, actorUserId);
 

@@ -1,0 +1,235 @@
+import type { ProductCandidate } from '@cart/shared';
+
+export const mockCatalog: Record<string, ProductCandidate[]> = {
+  'aji amarillo paste': [
+    {
+      product_id: 'walmart-aji-1',
+      title: 'Inca Food Aji Amarillo Paste',
+      brand: 'Inca Food',
+      price: 6.49,
+      size_value: 7.5,
+      size_unit: 'tbsp',
+      quantity_text: '7.5 tbsp jar',
+    },
+  ],
+  bread: [
+    {
+      product_id: 'walmart-bread-1',
+      title: 'Sandwich Bread Loaf',
+      brand: 'Great Value',
+      price: 2.48,
+      size_value: 20,
+      size_unit: 'slice',
+      quantity_text: '20 slices',
+    },
+  ],
+  'chicken breast': [
+    {
+      product_id: 'walmart-chicken-breast-1',
+      title: 'Boneless Skinless Chicken Breast',
+      brand: 'Freshness Guaranteed',
+      price: 8.96,
+      size_value: 1000,
+      size_unit: 'g',
+      quantity_text: '1000 g tray',
+    },
+  ],
+  'chicken stock': [
+    {
+      product_id: 'walmart-stock-1',
+      title: 'Chicken Broth',
+      brand: 'Great Value',
+      price: 2.12,
+      size_value: 4,
+      size_unit: 'cup',
+      quantity_text: '4 cups carton',
+    },
+  ],
+  cilantro: [
+    {
+      product_id: 'walmart-cilantro-1',
+      title: 'Fresh Cilantro Bunch',
+      brand: 'Fresh Produce',
+      price: 0.88,
+      size_value: 1,
+      size_unit: 'cup',
+      quantity_text: '1 bunch',
+    },
+  ],
+  corn: [
+    {
+      product_id: 'walmart-corn-1',
+      title: 'Fresh Corn on the Cob',
+      brand: 'Fresh Produce',
+      price: 0.5,
+      size_value: 1,
+      size_unit: 'ear',
+      quantity_text: '1 ear',
+    },
+  ],
+  egg: [
+    {
+      product_id: 'walmart-egg-1',
+      title: 'Large White Eggs',
+      brand: 'Great Value',
+      price: 3.24,
+      size_value: 12,
+      size_unit: 'unit',
+      quantity_text: '12 eggs',
+    },
+  ],
+  'evaporated milk': [
+    {
+      product_id: 'walmart-evap-1',
+      title: 'Evaporated Milk',
+      brand: 'Carnation',
+      price: 2.18,
+      size_value: 1,
+      size_unit: 'cup',
+      quantity_text: '1 cup can',
+    },
+  ],
+  'french fries': [
+    {
+      product_id: 'walmart-fries-1',
+      title: 'Frozen French Fries',
+      brand: 'Great Value',
+      price: 3.48,
+      size_value: 750,
+      size_unit: 'g',
+      quantity_text: '750 g bag',
+    },
+  ],
+  'green pea': [
+    {
+      product_id: 'walmart-peas-1',
+      title: 'Frozen Sweet Peas',
+      brand: 'Birds Eye',
+      price: 2.44,
+      size_value: 2,
+      size_unit: 'cup',
+      quantity_text: '2 cups bag',
+    },
+  ],
+  lime: [
+    {
+      product_id: 'walmart-lime-1',
+      title: 'Fresh Lime',
+      brand: 'Fresh Produce',
+      price: 0.33,
+      size_value: 1,
+      size_unit: 'unit',
+      quantity_text: '1 lime',
+    },
+  ],
+  pecan: [
+    {
+      product_id: 'walmart-pecan-1',
+      title: 'Pecan Halves',
+      brand: 'Great Value',
+      price: 4.98,
+      size_value: 1,
+      size_unit: 'cup',
+      quantity_text: '1 cup bag',
+    },
+  ],
+  'red bell pepper': [
+    {
+      product_id: 'walmart-pepper-1',
+      title: 'Red Bell Pepper',
+      brand: 'Fresh Produce',
+      price: 1.18,
+      size_value: 1,
+      size_unit: 'unit',
+      quantity_text: '1 pepper',
+    },
+  ],
+  'red onion': [
+    {
+      product_id: 'walmart-red-onion-1',
+      title: 'Red Onion',
+      brand: 'Fresh Produce',
+      price: 0.98,
+      size_value: 1,
+      size_unit: 'unit',
+      quantity_text: '1 onion',
+    },
+  ],
+  'red wine vinegar': [
+    {
+      product_id: 'walmart-vinegar-1',
+      title: 'Red Wine Vinegar',
+      brand: 'Great Value',
+      price: 3.16,
+      size_value: 16,
+      size_unit: 'tbsp',
+      quantity_text: '16 tbsp bottle',
+    },
+  ],
+  rice: [
+    {
+      product_id: 'walmart-rice-1',
+      title: 'Long Grain White Rice',
+      brand: 'Mahatma',
+      price: 3.98,
+      size_value: 5,
+      size_unit: 'cup',
+      quantity_text: '5 cups bag',
+    },
+  ],
+  'sweet potato': [
+    {
+      product_id: 'walmart-sweet-potato-1',
+      title: 'Sweet Potato',
+      brand: 'Fresh Produce',
+      price: 1.12,
+      size_value: 1,
+      size_unit: 'unit',
+      quantity_text: '1 sweet potato',
+    },
+  ],
+  'white fish fillet': [
+    {
+      product_id: 'walmart-fish-1',
+      title: 'Fresh White Fish Fillets',
+      brand: 'Freshness Guaranteed',
+      price: 12.4,
+      size_value: 900,
+      size_unit: 'g',
+      quantity_text: '900 g tray',
+    },
+  ],
+  tomato: [
+    {
+      product_id: 'walmart-tomato-1',
+      title: 'Roma Tomatoes',
+      brand: 'Fresh Produce',
+      price: 0.72,
+      size_value: 1,
+      size_unit: 'unit',
+      quantity_text: '1 tomato',
+    },
+  ],
+  'yellow potato': [
+    {
+      product_id: 'walmart-potato-1',
+      title: 'Yellow Potato',
+      brand: 'Fresh Produce',
+      price: 0.84,
+      size_value: 1,
+      size_unit: 'unit',
+      quantity_text: '1 potato',
+    },
+  ],
+  'chicken thigh': [
+    {
+      product_id: 'walmart-chicken-thigh-1',
+      title: 'Chicken Thighs',
+      brand: 'Freshness Guaranteed',
+      price: 7.96,
+      size_value: 1000,
+      size_unit: 'g',
+      quantity_text: '1000 g tray',
+    },
+  ],
+};

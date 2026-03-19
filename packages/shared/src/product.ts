@@ -27,6 +27,8 @@ export type MatchedIngredientProduct = {
   purchase_unit_hint?: string;
   walmart_search_query: string;
   selected_product: ProductCandidate | null;
+  selected_quantity?: number;
+  estimated_line_total?: number;
   fallback_used?: boolean;
   notes?: string;
 };

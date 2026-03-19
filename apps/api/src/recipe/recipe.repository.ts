@@ -112,4 +112,24 @@ export class RecipeRepository {
 
     return recipe ? mapBaseRecipe(recipe) : null;
   }
+
+  async findManyByIds(
+    ids: string[],
+    actorUserId?: string,
+  ): Promise<BaseRecipe[]> {
+    const actor = await this.resolveActorUser(actorUserId);
+
+    const recipes = await this.prisma.baseRecipe.findMany({
+      where: {
+        id: { in: ids },
+        OR: [{ isSystemRecipe: true }, { ownerUserId: actor.id }],
+      },
+      include: {
+        ingredients: true,
+        steps: true,
+      },
+    });
+
+    return recipes.map(mapBaseRecipe);
+  }
 }
