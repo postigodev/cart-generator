@@ -7,21 +7,40 @@ Import these files into Postman:
 
 Suggested order:
 
-1. `Recipes / Create Recipe`
-2. `Cart / Generate Cart`
-3. `Cart / List Generated Cart History`
-4. `Cart / List Generated Carts`
-5. `Cart / Get Generated Cart By Id`
-6. `Cart / List Cart Drafts`
-7. `Cart / Get Cart Draft By Id`
+1. `Auth / Register`
+2. `Auth / Login`
+3. `Catalog / List Cuisines`
+4. `Catalog / List Tags (public)`
+5. `Me / Put Me Preferences`
+6. `Recipes / List Recipes (public)`
+7. `Recipes / Create Recipe`
+8. `Tags / Create User Tag`
+9. `Carts / Create Cart`
+10. `Carts / Create Shopping Cart From Cart`
+11. `Negative / ...`
 
 The collection uses these variables:
 
 - `baseUrl`
-- `userId`
 - `requestId`
+- `authEmail`
+- `authPassword`
+- `accessToken`
+- `refreshToken`
+- `cuisineId`
+- `secondCuisineId`
+- `systemTagId`
+- `secondSystemTagId`
+- `userTagId`
+- `systemRecipeId`
 - `recipeId`
-- `cartDraftId`
-- `generatedCartId`
+- `cartId`
+- `shoppingCartId`
 
-Tests inside the requests update those ids automatically when responses include them.
+Tests inside the requests update tokens and ids automatically when responses include them.
+
+Notes:
+
+- the collection targets the current `/api/v1` contract
+- authenticated requests use `Authorization: Bearer {{accessToken}}`
+- `Negative / Put Preferences With User Tag -> 403` assumes `Tags / Create User Tag` has already run
