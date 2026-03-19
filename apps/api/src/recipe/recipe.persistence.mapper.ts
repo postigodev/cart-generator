@@ -30,7 +30,6 @@ export const buildCreateRecipeData = (
   cuisine: input.cuisine,
   description: input.description,
   servings: input.servings,
-  tags: input.tags ?? [],
   ingredients: {
     create: input.ingredients.map(mapIngredientCreateInput),
   },
@@ -44,7 +43,6 @@ export const buildUpdateRecipeData = (input: UpdateRecipeDto) => ({
   cuisine: input.cuisine,
   description: input.description,
   servings: input.servings,
-  tags: input.tags,
   ...(input.ingredients
     ? {
         ingredients: {

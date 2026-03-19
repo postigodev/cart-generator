@@ -39,6 +39,7 @@ That flow is implemented in the NestJS API under:
 ```text
 apps/api/src/
 |-- auth/
+|-- tags/
 |-- recipe/
 |-- cart/
 |-- aggregation/
@@ -310,7 +311,7 @@ Current status:
 - `/me` is implemented
 - client migration away from `x-user-id` is still pending
 
-### 3. Hybrid Tags And Controlled Cuisine
+### 2. Hybrid Tags And Controlled Cuisine
 
 Purpose:
 
@@ -318,9 +319,11 @@ Purpose:
 
 Status:
 
-- `tags` are still `string[]`
+- explicit `Tag` and `RecipeTag` persistence is implemented
+- `/api/v1/tags` is implemented
+- recipes still expose `tags: string[]` at the HTTP boundary while resolving relational tags underneath
 - `cuisine` is still a free string
-- both should evolve next, now that the `/api/v1` boundary is already stable
+- controlled cuisine is still the next taxonomy step
 
 ### 3. Real Retailer Provider
 

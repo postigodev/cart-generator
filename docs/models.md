@@ -24,6 +24,7 @@ This file is a readable map of those contracts plus the now-implemented conceptu
 - shopping-cart models: what will actually be purchased
 - user models: who owns what
 - auth models: how identities and sessions attach to users
+- tag models: shared taxonomy plus private organization
 
 ## 1. Recipe Models
 
@@ -446,6 +447,36 @@ Interpretation:
 - refresh tokens are persisted server-side as hashes, not cleartext
 - refresh rotation revokes the previous token and links it to the replacement token
 
+## 9. Tag Models
+
+### TagScope
+
+```ts
+type TagScope = "system" | "user";
+```
+
+### Tag
+
+Current shape:
+
+```ts
+type Tag = {
+  id: string;
+  owner_user_id?: string;
+  name: string;
+  slug: string;
+  scope: TagScope;
+  created_at: string;
+  updated_at: string;
+};
+```
+
+Interpretation:
+
+- system tags are shared taxonomy
+- user tags are private to the owner unless sharing is introduced later
+- recipes now link to tags relationally, not through a persisted string array column
+
 ## Current Model Constraints
 
 - canonical ingredient naming is required
@@ -454,12 +485,12 @@ Interpretation:
 - a user can only have one saved fork per source system recipe
 - one `Cart` is now the parent of persisted `ShoppingCart` snapshots
 - auth can attach multiple identities to one user account
-- tags are still plain `string[]` for now
+- tags are stored relationally as `Tag` + `RecipeTag`
 
 ## Known Future Changes
 
 - `RecipeVariant` and adaptation models still need runtime implementation
-- tags will likely move from `string[]` to a hybrid shared/private tag model
+- recipe HTTP payloads may later evolve from `tags: string[]` to more explicit tag references
 - the web app still needs to migrate from `x-user-id` fallback to bearer-token auth
 - retailer types will expand beyond `"walmart"` once real integrations exist
 - cuisine will likely move from free string to controlled taxonomy

@@ -18,6 +18,11 @@ enum AuthProvider {
   password
 }
 
+enum TagScope {
+  system
+  user
+}
+
 model User {
   id             String          @id @default(cuid())
   email          String          @unique
@@ -27,6 +32,7 @@ model User {
   updatedAt      DateTime        @updatedAt
   authIdentities AuthIdentity[]
   refreshTokens  RefreshToken[]
+  ownedTags      Tag[]
   ownedRecipes   BaseRecipe[]
   cartDrafts     CartDraft[]
   carts          Cart[]
@@ -74,19 +80,45 @@ model BaseRecipe {
   cuisine     String?
   description String?
   servings    Int
-  tags        String[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   owner       User?            @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
   forkedFromRecipe BaseRecipe? @relation("ForkedRecipeSource", fields: [forkedFromRecipeId], references: [id], onDelete: SetNull)
   forkedRecipes   BaseRecipe[] @relation("ForkedRecipeSource")
   ingredients DishIngredient[]
+  recipeTags  RecipeTag[]
   steps       RecipeStep[]
 
   @@index([ownerUserId, createdAt])
   @@index([forkedFromRecipeId])
   @@index([isSystemRecipe, createdAt])
   @@unique([ownerUserId, forkedFromRecipeId])
+}
+
+model Tag {
+  id          String      @id @default(cuid())
+  ownerUserId String?
+  name        String
+  slug        String
+  scope       TagScope
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  owner       User?       @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  recipeTags  RecipeTag[]
+
+  @@index([scope, name])
+  @@index([scope, slug])
+  @@index([ownerUserId, scope, slug])
+}
+
+model RecipeTag {
+  recipeId String
+  tagId    String
+  recipe   BaseRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  tag      Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([recipeId, tagId])
+  @@index([tagId])
 }
 
 model DishIngredient {

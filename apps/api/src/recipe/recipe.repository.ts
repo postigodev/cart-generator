@@ -50,18 +50,145 @@ export class RecipeRepository {
       },
       include: {
         ingredients: true,
+        recipeTags: {
+          include: {
+            tag: true,
+          },
+        },
         steps: true,
       },
     });
   }
 
+  private normalizeTagName(tag: string): string {
+    return tag.trim().replace(/\s+/g, ' ');
+  }
+
+  private normalizeTagSlug(tag: string): string {
+    return this.normalizeTagName(tag)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  private async createUserTagWithRetry(
+    ownerUserId: string,
+    name: string,
+    slug: string,
+  ) {
+    try {
+      return await this.prisma.tag.create({
+        data: {
+          ownerUserId,
+          name,
+          slug,
+          scope: 'user',
+        },
+      });
+    } catch (error) {
+      if (this.isUniqueConstraintError(error)) {
+        const existingTag = await this.prisma.tag.findFirst({
+          where: {
+            ownerUserId,
+            scope: 'user',
+            slug,
+          },
+        });
+
+        if (existingTag) {
+          return existingTag;
+        }
+      }
+
+      throw error;
+    }
+  }
+
+  private async resolveTagIdsForActor(ownerUserId: string, tags?: string[]) {
+    const normalizedTags = (tags ?? [])
+      .map((tag) => this.normalizeTagName(tag))
+      .filter((tag) => tag.length > 0);
+
+    if (normalizedTags.length === 0) {
+      return [];
+    }
+
+    const uniqueTags = Array.from(
+      new Map(
+        normalizedTags.map((tag) => [this.normalizeTagSlug(tag), tag] as const),
+      ).entries(),
+    ).map(([slug, name]) => ({ slug, name }));
+
+    const slugs = uniqueTags.map((tag) => tag.slug);
+    const [systemTags, userTags] = await Promise.all([
+      this.prisma.tag.findMany({
+        where: {
+          scope: 'system',
+          slug: { in: slugs },
+        },
+      }),
+      this.prisma.tag.findMany({
+        where: {
+          scope: 'user',
+          ownerUserId,
+          slug: { in: slugs },
+        },
+      }),
+    ]);
+
+    const resolvedTags = new Map<string, { id: string }>();
+
+    for (const tag of systemTags) {
+      resolvedTags.set(tag.slug, tag);
+    }
+
+    for (const tag of userTags) {
+      if (!resolvedTags.has(tag.slug)) {
+        resolvedTags.set(tag.slug, tag);
+      }
+    }
+
+    for (const tag of uniqueTags) {
+      if (resolvedTags.has(tag.slug)) {
+        continue;
+      }
+
+      const createdTag = await this.createUserTagWithRetry(
+        ownerUserId,
+        tag.name,
+        tag.slug,
+      );
+      resolvedTags.set(tag.slug, createdTag);
+    }
+
+    return uniqueTags
+      .map((tag) => resolvedTags.get(tag.slug))
+      .filter((tag): tag is { id: string } => Boolean(tag))
+      .map((tag) => tag.id);
+  }
+
   async create(input: CreateRecipeDto, actorUserId?: string): Promise<BaseRecipe> {
     const actor = await this.resolveActorUser(actorUserId);
+    const tagIds = await this.resolveTagIdsForActor(actor.id, input.tags);
 
     const recipe = await this.prisma.baseRecipe.create({
-      data: buildCreateRecipeData(input, actor.id),
+      data: {
+        ...buildCreateRecipeData(input, actor.id),
+        recipeTags: {
+          create: tagIds.map((tagId) => ({
+            tag: {
+              connect: { id: tagId },
+            },
+          })),
+        },
+      },
       include: {
         ingredients: true,
+        recipeTags: {
+          include: {
+            tag: true,
+          },
+        },
         steps: true,
       },
     });
@@ -76,6 +203,11 @@ export class RecipeRepository {
       where: buildVisibleRecipeWhere(actor?.id),
       include: {
         ingredients: true,
+        recipeTags: {
+          include: {
+            tag: true,
+          },
+        },
         steps: true,
       },
       orderBy: {
@@ -96,6 +228,11 @@ export class RecipeRepository {
       },
       include: {
         ingredients: true,
+        recipeTags: {
+          include: {
+            tag: true,
+          },
+        },
         steps: true,
       },
     });
@@ -116,6 +253,11 @@ export class RecipeRepository {
       },
       include: {
         ingredients: true,
+        recipeTags: {
+          include: {
+            tag: true,
+          },
+        },
         steps: true,
       },
     });
@@ -133,6 +275,11 @@ export class RecipeRepository {
       where: buildOwnedMutableRecipeWhere(id, actor.id),
       include: {
         ingredients: true,
+        recipeTags: {
+          include: {
+            tag: true,
+          },
+        },
         steps: true,
       },
     });
@@ -141,11 +288,35 @@ export class RecipeRepository {
       return null;
     }
 
+    const tagIds =
+      input.tags !== undefined
+        ? await this.resolveTagIdsForActor(actor.id, input.tags)
+        : null;
+
     const recipe = await this.prisma.baseRecipe.update({
       where: { id },
-      data: buildUpdateRecipeData(input),
+      data: {
+        ...buildUpdateRecipeData(input),
+        ...(tagIds !== null
+          ? {
+              recipeTags: {
+                deleteMany: {},
+                create: tagIds.map((tagId) => ({
+                  tag: {
+                    connect: { id: tagId },
+                  },
+                })),
+              },
+            }
+          : {}),
+      },
       include: {
         ingredients: true,
+        recipeTags: {
+          include: {
+            tag: true,
+          },
+        },
         steps: true,
       },
     });
@@ -166,6 +337,11 @@ export class RecipeRepository {
       },
       include: {
         ingredients: true,
+        recipeTags: {
+          include: {
+            tag: true,
+          },
+        },
         steps: true,
       },
     });
@@ -190,7 +366,15 @@ export class RecipeRepository {
           cuisine: sourceRecipe.cuisine,
           description: sourceRecipe.description,
           servings: sourceRecipe.servings,
-          tags: sourceRecipe.tags,
+          recipeTags: {
+            create: (sourceRecipe.recipeTags ?? []).map((recipeTag) => ({
+              tag: {
+                connect: {
+                  id: recipeTag.tagId,
+                },
+              },
+            })),
+          },
           ingredients: {
             create: sourceRecipe.ingredients.map((ingredient) => ({
               canonicalIngredient: ingredient.canonicalIngredient,
@@ -212,6 +396,11 @@ export class RecipeRepository {
         },
         include: {
           ingredients: true,
+          recipeTags: {
+            include: {
+              tag: true,
+            },
+          },
           steps: true,
         },
       });

@@ -8,6 +8,7 @@ import { CommonHttpModule } from './common/http/common-http.module';
 import { MatchingModule } from './matching/matching.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RecipeModule } from './recipe/recipe.module';
+import { TagsModule } from './tags/tags.module';
 import { UserModule } from './user/user.module';
 
 @Module({
@@ -16,6 +17,7 @@ import { UserModule } from './user/user.module';
     PrismaModule,
     AuthModule,
     UserModule,
+    TagsModule,
     RecipeModule,
     AggregationModule,
     MatchingModule,

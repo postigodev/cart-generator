@@ -12,6 +12,7 @@ The NestJS API in [apps/api](/C:/Users/akuma/repos/cart-generator/apps/api) curr
 
 - user and admin identities in the database
 - real auth endpoints for email/password, Google login, refresh, logout, and `/me`
+- hybrid tags with explicit `/api/v1/tags` endpoints
 - global system recipes and user-owned recipes
 - recipe CRUD for user-owned recipes
 - an explicit fork flow for copying a system recipe into a user-owned editable recipe
@@ -20,6 +21,7 @@ The NestJS API in [apps/api](/C:/Users/akuma/repos/cart-generator/apps/api) curr
 - deterministic ingredient aggregation and mock retailer matching behind shopping-cart generation
 - mock product matching with subtotal estimation
 - internal `/api/v1` route families for `recipes`, `recipe-forks`, `cart-drafts`, `carts`, and `shopping-carts`
+- internal `/api/v1/tags` for visible system tags and user-owned tags
 - Swagger UI at `/docs`
 - request tracing via `x-request-id`
 
@@ -155,6 +157,7 @@ Swagger:
 - authenticated users see global recipes plus their own recipes
 - writes require authentication
 - `/api/v1/me` is the authenticated profile boundary
+- tags are now explicit resources with `system` and `user` scope
 - forking a system recipe creates a user-owned editable copy
 - duplicate forks of the same source recipe are prevented per user
 - `CartDraft` is editable user intent
@@ -197,7 +200,9 @@ This separation is intentional:
 
 - `/api/v1` is now the active internal API contract.
 - auth persistence now includes `AuthIdentity` and `RefreshToken`.
+- tags persistence now includes `Tag` and `RecipeTag`.
 - `/api/v1/auth/register`, `/login`, `/google`, `/refresh`, `/logout`, and `/me` are implemented.
+- `/api/v1/tags` now supports list/create/update/delete.
 - `POST /api/v1/recipe-forks` replaced the old save-style route.
 - `cart-drafts`, `carts`, and `shopping-carts` are separate resources in API, shared models, and database schema.
 - Prisma migration `20260319113000_split_cart_and_shopping_cart_v1` materializes the new `Cart`/`ShoppingCart` split.
@@ -209,11 +214,10 @@ The highest-signal next steps are in backend, not frontend expansion.
 
 1. Replace the temporary `x-user-id` development header flow with real auth and a proper `/me` boundary.
 2. Finish ownership hardening and migrate the web app off the temporary `x-user-id` fallback onto bearer tokens.
-3. Add tag modeling beyond `string[]`, with system tags plus user-extensible tagging rules.
-4. Decide whether `cuisine` remains lightweight or becomes a controlled taxonomy tied to tags.
-5. Keep retailer integration behind `ShoppingCart` and swap mock matching for a real provider later.
-6. Defer recipe variants and AI-assisted adaptation until auth and tagging are settled.
-7. Add captcha to sensitive auth surfaces after the core auth/client migration is stable.
+3. Decide whether `cuisine` remains lightweight or becomes a controlled taxonomy tied to tags.
+4. Keep retailer integration behind `ShoppingCart` and swap mock matching for a real provider later.
+5. Defer recipe variants and AI-assisted adaptation until auth and tagging are settled.
+6. Add captcha to sensitive auth surfaces after the core auth/client migration is stable.
 
 ## Current Gaps
 
@@ -222,7 +226,7 @@ The highest-signal next steps are in backend, not frontend expansion.
 - Google OAuth backend exists, but the web app does not expose that UX yet
 - there is no onboarding flow for culinary preferences or dietary interests yet
 - `cuisine` is still a free `string`, not a controlled catalog relation
-- tags are still `string[]` and not yet modeled as hybrid system/user tags
+- recipes still expose `tags: string[]` in their HTTP payloads even though tags are now stored relationally
 - recipe variants and AI-assisted adaptation are not implemented yet
 - retailer matching is still mock data, not a real retailer integration
 

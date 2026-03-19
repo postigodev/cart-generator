@@ -42,7 +42,6 @@ describe('recipe.persistence.mapper', () => {
       cuisine: 'Peruvian',
       description: 'Comforting chicken and rice dish.',
       servings: 4,
-      tags: ['dinner'],
       ingredients: {
         create: [
           {
@@ -93,7 +92,6 @@ describe('recipe.persistence.mapper', () => {
       cuisine: undefined,
       description: undefined,
       servings: 6,
-      tags: ['updated'],
       ingredients: {
         deleteMany: {},
         create: [

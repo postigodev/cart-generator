@@ -121,10 +121,10 @@ describe('RecipeRepository visibility', () => {
         cuisine: 'Peruvian',
         description: null,
         servings: 4,
-        tags: ['dinner'],
         createdAt: new Date('2026-03-19T00:00:00.000Z'),
         updatedAt: new Date('2026-03-19T00:00:00.000Z'),
         ingredients: [],
+        recipeTags: [],
         steps: [],
       })
       .mockResolvedValueOnce({
@@ -136,10 +136,10 @@ describe('RecipeRepository visibility', () => {
         cuisine: 'Peruvian',
         description: null,
         servings: 4,
-        tags: ['dinner'],
         createdAt: new Date('2026-03-19T00:10:00.000Z'),
         updatedAt: new Date('2026-03-19T00:10:00.000Z'),
         ingredients: [],
+        recipeTags: [],
         steps: [],
       });
 
@@ -169,10 +169,10 @@ describe('RecipeRepository visibility', () => {
         cuisine: 'Peruvian',
         description: null,
         servings: 4,
-        tags: ['dinner'],
         createdAt: new Date('2026-03-19T00:00:00.000Z'),
         updatedAt: new Date('2026-03-19T00:00:00.000Z'),
         ingredients: [],
+        recipeTags: [],
         steps: [],
       })
       .mockResolvedValueOnce(null)
@@ -185,10 +185,10 @@ describe('RecipeRepository visibility', () => {
         cuisine: 'Peruvian',
         description: null,
         servings: 4,
-        tags: ['dinner'],
         createdAt: new Date('2026-03-19T00:10:00.000Z'),
         updatedAt: new Date('2026-03-19T00:10:00.000Z'),
         ingredients: [],
+        recipeTags: [],
         steps: [],
       });
     prisma.baseRecipe.create.mockRejectedValue({

@@ -1,6 +1,85 @@
 const { systemRecipes } = require("./data/system-recipes");
 const { userRecipes } = require("./data/user-recipes");
 
+function normalizeTagName(tag) {
+  return tag.trim().replace(/\s+/g, " ");
+}
+
+function normalizeTagSlug(tag) {
+  return normalizeTagName(tag)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+async function connectRecipeTags(prisma, recipeId, ownerUserId, isSystemRecipe, tags) {
+  await prisma.recipeTag.deleteMany({
+    where: { recipeId },
+  });
+
+  const uniqueTags = Array.from(
+    new Map((tags ?? []).map((tag) => [normalizeTagSlug(tag), normalizeTagName(tag)])).entries(),
+  ).map(([slug, name]) => ({ slug, name }));
+
+  for (const tag of uniqueTags) {
+    const systemTag = await prisma.tag.findFirst({
+      where: {
+        scope: "system",
+        slug: tag.slug,
+      },
+    });
+
+    const resolvedTag =
+      systemTag ||
+      (isSystemRecipe
+        ? await prisma.tag.create({
+            data: {
+              name: tag.name,
+              slug: tag.slug,
+              scope: "system",
+            },
+          })
+        : null);
+
+    let userTag = resolvedTag;
+
+    if (!userTag) {
+      userTag = await prisma.tag.findFirst({
+        where: {
+          scope: "user",
+          ownerUserId,
+          slug: tag.slug,
+        },
+      });
+    }
+
+    if (!userTag) {
+      userTag = await prisma.tag.create({
+        data: {
+          name: tag.name,
+          slug: tag.slug,
+          scope: "user",
+          ownerUserId,
+        },
+      });
+    } else if (userTag.name !== tag.name) {
+      userTag = await prisma.tag.update({
+        where: { id: userTag.id },
+        data: {
+          name: tag.name,
+        },
+      });
+    }
+
+    await prisma.recipeTag.create({
+      data: {
+        recipeId,
+        tagId: (resolvedTag || userTag).id,
+      },
+    });
+  }
+}
+
 async function upsertRecipe(prisma, recipe, ownership) {
   const existing = await prisma.baseRecipe.findFirst({
     where: {
@@ -18,7 +97,6 @@ async function upsertRecipe(prisma, recipe, ownership) {
     cuisine: recipe.cuisine,
     description: recipe.description,
     servings: recipe.servings,
-    tags: recipe.tags,
     ingredients: {
       deleteMany: existing ? {} : undefined,
       create: recipe.ingredients,
@@ -30,14 +108,28 @@ async function upsertRecipe(prisma, recipe, ownership) {
   };
 
   if (existing) {
-    await prisma.baseRecipe.update({
+    const updated = await prisma.baseRecipe.update({
       where: { id: existing.id },
       data,
     });
+    await connectRecipeTags(
+      prisma,
+      updated.id,
+      ownership.ownerUserId ?? null,
+      ownership.isSystemRecipe,
+      recipe.tags,
+    );
     return;
   }
 
-  await prisma.baseRecipe.create({ data });
+  const created = await prisma.baseRecipe.create({ data });
+  await connectRecipeTags(
+    prisma,
+    created.id,
+    ownership.ownerUserId ?? null,
+    ownership.isSystemRecipe,
+    recipe.tags,
+  );
 }
 
 async function seedRecipes(prisma, devUserId) {

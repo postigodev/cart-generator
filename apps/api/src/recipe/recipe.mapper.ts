@@ -39,7 +39,10 @@ export const mapBaseRecipe = (
     .slice()
     .sort((left, right) => left.stepNumber - right.stepNumber)
     .map(mapStep),
-  tags: recipe.tags,
+  tags: (recipe.recipeTags ?? [])
+    .slice()
+    .sort((left, right) => left.tag.name.localeCompare(right.tag.name))
+    .map((recipeTag) => recipeTag.tag.name),
   created_at: recipe.createdAt.toISOString(),
   updated_at: recipe.updatedAt.toISOString(),
 });

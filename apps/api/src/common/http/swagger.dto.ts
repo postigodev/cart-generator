@@ -83,6 +83,29 @@ export class BaseRecipeResponseDto {
   updated_at!: string;
 }
 
+export class TagResponseDto {
+  @ApiProperty({ example: 'tag-1' })
+  id!: string;
+
+  @ApiPropertyOptional({ example: 'user-1' })
+  owner_user_id?: string;
+
+  @ApiProperty({ example: 'Weeknight' })
+  name!: string;
+
+  @ApiProperty({ example: 'weeknight' })
+  slug!: string;
+
+  @ApiProperty({ example: 'system' })
+  scope!: 'system' | 'user';
+
+  @ApiProperty({ example: '2026-03-19T03:12:00.000Z' })
+  created_at!: string;
+
+  @ApiProperty({ example: '2026-03-19T03:12:00.000Z' })
+  updated_at!: string;
+}
+
 export class DishResponseDto {
   @ApiPropertyOptional({ example: 'recipe-1' })
   id?: string;

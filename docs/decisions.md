@@ -253,6 +253,10 @@ Why:
 - shared taxonomy and private organization are different concerns
 - hybrid tags support both discovery and personal workflow
 
+Status:
+- implemented in persistence and via `/api/v1/tags`
+- recipes still expose `tags: string[]` at the HTTP boundary for now
+
 ## 21. Replace Boolean Ownership Semantics With Clearer States Later
 
 Decision:

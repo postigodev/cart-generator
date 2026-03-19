@@ -41,6 +41,26 @@ export const recipeExample = {
 
 export const recipeListExample = [recipeExample];
 
+export const systemTagExample = {
+  id: 'tag-system-weeknight',
+  owner_user_id: undefined,
+  name: 'Weeknight',
+  slug: 'weeknight',
+  scope: 'system',
+  created_at: '2026-03-19T03:12:00.000Z',
+  updated_at: '2026-03-19T03:12:00.000Z',
+};
+
+export const userTagExample = {
+  id: 'tag-user-my-favorites',
+  owner_user_id: 'user-1',
+  name: 'My Favorites',
+  slug: 'my-favorites',
+  scope: 'user',
+  created_at: '2026-03-19T03:12:00.000Z',
+  updated_at: '2026-03-19T03:12:00.000Z',
+};
+
 export const createRecipeRequestExample = {
   name: 'Arroz con pollo casero',
   cuisine: 'Peruvian',
