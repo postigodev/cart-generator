@@ -1,8 +1,8 @@
 # Cart Generator
 
-Cart Generator is a `pnpm` monorepo for turning saved recipes into structured meal plans and derived shopping carts.
+Cart Generator is a `pnpm` monorepo for turning saved recipes into recipe-based carts and derived shopping carts.
 
-The backend is beyond scaffold stage. The API already supports recipe persistence, user/system ownership rules, deterministic ingredient aggregation, mock retailer matching, cart persistence, Swagger docs, and local Postgres via Docker. The frontend is still mostly unfinished.
+The backend has already crossed the initial scaffold stage. The API now exposes the internal `/api/v1` contract, persists `CartDraft`, `Cart`, and `ShoppingCart` separately, and runs against local Postgres with Prisma migrations. The frontend exists mainly as a thin internal dashboard pointed at the new API surface; the next priority is still backend work.
 
 ## What Exists Today
 
@@ -13,10 +13,12 @@ The NestJS API in [apps/api](/C:/Users/akuma/repos/cart-generator/apps/api) curr
 - user and admin identities in the database
 - global system recipes and user-owned recipes
 - recipe CRUD for user-owned recipes
-- an explicit save/fork flow for copying a system recipe into a user-owned editable recipe
-- deterministic cart generation from recipe selections
-- persisted cart drafts and persisted generated shopping carts
+- an explicit fork flow for copying a system recipe into a user-owned editable recipe
+- persisted `cart-drafts`, `carts`, and `shopping-carts`
+- deterministic conversion from recipe selections into recipe-based carts
+- deterministic ingredient aggregation and mock retailer matching behind shopping-cart generation
 - mock product matching with subtotal estimation
+- internal `/api/v1` route families for `recipes`, `recipe-forks`, `cart-drafts`, `carts`, and `shopping-carts`
 - Swagger UI at `/docs`
 - request tracing via `x-request-id`
 
@@ -47,7 +49,7 @@ The main architecture and design notes live in:
 - [docs/decisions.md](/C:/Users/akuma/repos/cart-generator/docs/decisions.md)
 - [docs/models.md](/C:/Users/akuma/repos/cart-generator/docs/models.md)
 
-Those docs intentionally describe both implemented behavior and the approved direction for the next API refactor.
+Those docs now describe the implemented `v1` direction and the next backend milestones.
 
 ## Repository Layout
 
@@ -151,13 +153,16 @@ Swagger:
 - unauthenticated recipe reads only see global system recipes
 - authenticated users see global recipes plus their own recipes
 - writes require authentication
-- saving a system recipe creates a user-owned fork
+- forking a system recipe creates a user-owned editable copy
 - duplicate forks of the same source recipe are prevented per user
+- `CartDraft` is editable user intent
+- `Cart` is the stable recipe-based meal plan snapshot
+- `ShoppingCart` is the retailer-facing basket derived from a `Cart`
 - aggregation and retailer matching remain deterministic
 
-## Approved API Direction
+## Live API Shape
 
-The next API refactor should establish a clean internal `v1` contract under `/api/v1`.
+The clean internal `v1` contract is now the implemented direction under `/api/v1`.
 
 Resource families:
 
@@ -184,21 +189,30 @@ This separation is intentional:
 - `Cart` answers "what do I want to cook?"
 - `ShoppingCart` answers "what do I need to buy?"
 - retailer integration belongs behind `ShoppingCart`
-- real auth and future tags should be built on top of this cleaner API shape, not on the current surface
+- real auth and future tags should be built on top of this API shape, not by reshaping it again
 
-## Recommended Execution Order
+## What Changed Recently
 
-1. Refactor the HTTP surface to the internal `/api/v1` contract.
-2. Split the current cart concept into `Cart` and `ShoppingCart` at the API and domain boundary level.
-3. Update the web app to consume the new `v1` contract.
-4. Replace development header identity with real auth centered on `/me`.
-5. Add hybrid tags and controlled cuisine taxonomy.
-6. Replace mock matching with a real retailer provider behind the shopping-cart flow.
-7. Add recipe variants and AI-assisted adaptation later as a separate layer.
+- `/api/v1` is now the active internal API contract.
+- `POST /api/v1/recipe-forks` replaced the old save-style route.
+- `cart-drafts`, `carts`, and `shopping-carts` are separate resources in API, shared models, and database schema.
+- Prisma migration `20260319113000_split_cart_and_shopping_cart_v1` materializes the new `Cart`/`ShoppingCart` split.
+- the web app dashboard in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) now reads the `/api/v1` endpoints and reflects the new model vocabulary.
+
+## Upcoming Work
+
+The highest-signal next steps are in backend, not frontend expansion.
+
+1. Replace the temporary `x-user-id` development header flow with real auth and a proper `/me` boundary.
+2. Add tag modeling beyond `string[]`, with system tags plus user-extensible tagging rules.
+3. Decide whether `cuisine` remains lightweight or becomes a controlled taxonomy tied to tags.
+4. Tighten authorization rules around ownership now that the `v1` surface is stable.
+5. Keep retailer integration behind `ShoppingCart` and swap mock matching for a real provider later.
+6. Defer recipe variants and AI-assisted adaptation until auth and tagging are settled.
 
 ## Current Gaps
 
-- the web app in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) is still not a real product UI
+- the web app in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) is still a thin internal dashboard, not a full product UI
 - authentication is still header-based development context, not a real login/session flow
 - there is no real account system yet for Google OAuth, email/password, or phone login
 - there is no `/me` profile surface yet
@@ -215,4 +229,4 @@ If you want the current truth of the system:
 1. Read [docs/architecture.md](/C:/Users/akuma/repos/cart-generator/docs/architecture.md) for the layered system and the approved `Cart` vs `ShoppingCart` split.
 2. Read [docs/decisions.md](/C:/Users/akuma/repos/cart-generator/docs/decisions.md) for the policy and API-shape decisions.
 3. Read [docs/models.md](/C:/Users/akuma/repos/cart-generator/docs/models.md) for the conceptual model vocabulary.
-4. Read Swagger at `/docs` for the live implemented contract until the `v1` refactor lands.
+4. Read Swagger at `/docs` for the live implemented `/api/v1` contract.

@@ -1,6 +1,6 @@
 # Models - Cart Generator
 
-This document describes the conceptual domain contracts in [packages/shared](/C:/Users/akuma/repos/cart-generator/packages/shared) and the approved vocabulary for the next API refactor.
+This document describes the conceptual domain contracts in [packages/shared](/C:/Users/akuma/repos/cart-generator/packages/shared) and the current vocabulary of the implemented `/api/v1` API.
 
 The source of truth for implemented types is still the code:
 
@@ -12,7 +12,7 @@ The source of truth for implemented types is still the code:
 - [cart.ts](/C:/Users/akuma/repos/cart-generator/packages/shared/src/cart.ts)
 - [user.ts](/C:/Users/akuma/repos/cart-generator/packages/shared/src/user.ts)
 
-This file is a readable map of those contracts plus the approved conceptual split between `Cart` and `ShoppingCart`.
+This file is a readable map of those contracts plus the now-implemented conceptual split between `Cart` and `ShoppingCart`.
 
 ## Layer Split
 
@@ -201,7 +201,7 @@ Interpretation:
 
 ### Cart
 
-Conceptual approved shape:
+Current shape:
 
 ```ts
 type Cart = {
@@ -223,8 +223,8 @@ Interpretation:
 
 Current runtime note:
 
-- the codebase does not yet expose this concept cleanly at the API level
-- some of its responsibilities are currently folded into generated-cart flows
+- this concept is now explicit in the API, shared models, and database schema
+- `Cart` is the meal-plan snapshot, not the purchase basket
 
 ## 4. Aggregation Models
 
@@ -339,7 +339,7 @@ Status:
 
 ### ShoppingCart
 
-Conceptual approved shape:
+Current shape:
 
 ```ts
 type ShoppingCart = {
@@ -362,8 +362,8 @@ Interpretation:
 
 Current runtime note:
 
-- this is currently represented as a generated-cart concept
-- the approved direction is to rename and model it explicitly as `ShoppingCart`
+- this concept is now represented explicitly as `ShoppingCart`
+- matching still runs against a mock provider and should later swap to a real retailer adapter
 
 ## 7. User Models
 
@@ -397,7 +397,7 @@ Status:
 - aggregation and matching remain deterministic
 - system recipes and user-owned recipes are distinct states
 - a user can only have one saved fork per source system recipe
-- one `Cart` may eventually produce multiple `ShoppingCart` snapshots
+- one `Cart` is now the parent of persisted `ShoppingCart` snapshots
 - tags are still plain `string[]` for now
 
 ## Known Future Changes
@@ -406,4 +406,4 @@ Status:
 - tags will likely move from `string[]` to a hybrid shared/private tag model
 - auth will move from `x-user-id` development context to real authentication
 - retailer types will expand beyond `"walmart"` once real integrations exist
-- implemented shared contracts will need to catch up to the approved `Cart` vs `ShoppingCart` vocabulary
+- cuisine will likely move from free string to controlled taxonomy

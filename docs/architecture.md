@@ -16,7 +16,7 @@ The core design principles remain the same:
 This document distinguishes:
 
 - what is implemented today
-- what is the approved next API direction
+- what is implemented but still transitional
 
 ## Current Implemented Flow
 
@@ -24,12 +24,14 @@ Today the backend can already do this:
 
 ```text
 Visible recipes
+  -> Cart draft persistence
   -> User selection
+  -> Cart persistence
   -> Dish expansion
   -> Ingredient aggregation
   -> Product matching (mock catalog)
   -> Cost estimation
-  -> Persisted generated cart
+  -> Persisted shopping cart
 ```
 
 That flow is implemented in the NestJS API under:
@@ -45,9 +47,9 @@ apps/api/src/
 `-- common/http/
 ```
 
-## Approved Conceptual Flow
+## Current Conceptual Flow
 
-The approved model for the next refactor is:
+The implemented model is:
 
 ```text
 Recipe
@@ -122,8 +124,8 @@ Approved responsibilities:
 
 Current status:
 
-- this concept is only partially explicit today
-- some current endpoints collapse `Cart` and `ShoppingCart` into one generated-cart concept
+- this concept is now explicit in API, persistence, and shared types
+- `Cart` is no longer collapsed into the generated shopping output
 
 ### 4. Aggregation Layer
 
@@ -171,7 +173,7 @@ Purpose:
 
 - persist the retailer-facing purchase basket derived from a `Cart`
 
-Approved responsibilities:
+Implemented responsibilities:
 
 - link to a parent `Cart`
 - preserve the aggregated overview snapshot
@@ -180,8 +182,8 @@ Approved responsibilities:
 
 Current status:
 
-- this is currently represented as a generated-cart concept
-- the approved direction is to rename and model it explicitly as `ShoppingCart`
+- this is now represented explicitly as `ShoppingCart`
+- retailer matching still uses a mock provider boundary
 
 ## Current Access Model
 
@@ -201,11 +203,11 @@ Current development identity:
 
 This is temporary developer auth context, not final authentication architecture.
 
-## Approved API Shape
+## Live API Shape
 
-The next internal API should live under `/api/v1`.
+The internal API now lives under `/api/v1`.
 
-Approved route families:
+Implemented route families:
 
 - `/api/v1/recipes`
 - `/api/v1/recipe-forks`
@@ -213,9 +215,9 @@ Approved route families:
 - `/api/v1/carts`
 - `/api/v1/shopping-carts`
 
-Approved mapping:
+Implemented mapping:
 
-- `POST /api/v1/recipe-forks` replaces the current save/fork command route
+- `POST /api/v1/recipe-forks` replaces the older save-style command route
 - `POST /api/v1/carts` creates the meal-plan snapshot
 - `POST /api/v1/carts/:cartId/shopping-carts` derives a purchase basket from a cart
 
@@ -224,15 +226,6 @@ This keeps retailer integration behind the shopping-cart boundary instead of cou
 ## Current State Boundaries
 
 Persistent state today:
-
-- users
-- base recipes
-- dish ingredients
-- recipe steps
-- cart drafts
-- generated carts
-
-Approved persistent state direction:
 
 - users
 - base recipes
@@ -283,22 +276,9 @@ Not implemented yet:
 - real external retailer integration
 - OpenAI integration
 
-## Planned Next Layers
+## Next Layers
 
-### 1. Internal API v1 Refactor
-
-Purpose:
-
-- establish a clean internal contract before real auth and tag evolution
-
-Scope:
-
-- move to `/api/v1`
-- make resource names explicit
-- split `Cart` from `ShoppingCart`
-- align status codes and error semantics
-
-### 2. Real Authentication
+### 1. Real Authentication
 
 Purpose:
 
@@ -321,7 +301,18 @@ Status:
 
 - `tags` are still `string[]`
 - `cuisine` is still a free string
-- both should evolve after the `v1` API boundary is in place
+- both should evolve next, now that the `/api/v1` boundary is already stable
+
+### 3. Real Retailer Provider
+
+Purpose:
+
+- replace mock matching behind the `ShoppingCart` boundary without redesigning cart resources
+
+Status:
+
+- the resource boundary is already in place
+- the current provider is still mock-based
 
 ### 4. Adaptation Layer
 
@@ -361,7 +352,7 @@ Status:
 
 If you want the current truth of the system:
 
-1. read this file for implemented vs approved-next architecture
+1. read this file for implemented architecture and transitional boundaries
 2. read [docs/decisions.md](/C:/Users/akuma/repos/cart-generator/docs/decisions.md) for policy and API-shape decisions
 3. read [docs/models.md](/C:/Users/akuma/repos/cart-generator/docs/models.md) for the conceptual vocabulary
-4. read Swagger at `/docs` for the live implemented contract until the `v1` refactor lands
+4. read Swagger at `/docs` for the live implemented `/api/v1` contract

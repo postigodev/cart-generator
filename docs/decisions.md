@@ -348,7 +348,7 @@ Recommended direction:
 ## 25. Internal API Should Use A Clean `v1` Boundary
 
 Decision:
-- introduce a clean internal API boundary under `/api/v1` before real auth and tags work
+- use a clean internal API boundary under `/api/v1` before real auth and tags work
 - prefer resource-oriented route families over action-oriented endpoints
 
 Approved route families:
@@ -362,6 +362,9 @@ Why:
 - the web app needs a coherent internal contract even if the API is not public
 - auth and tags should land on top of stable resource boundaries, not on top of temporary route shapes
 - versioning gives a controlled place for future breaking changes
+
+Status:
+- implemented
 
 ## 26. Cart And ShoppingCart Are Separate Domain Concepts
 
@@ -380,6 +383,9 @@ Why:
 Approved flow:
 - `Recipe -> CartDraft -> Cart -> ShoppingCart`
 
+Status:
+- implemented in API, shared types, and database schema
+
 ## 27. ShoppingCart Generation Should Not Wait For LLM Integration
 
 Decision:
@@ -390,6 +396,10 @@ Why:
 - retailer matching is a deterministic integration problem, not an LLM prerequisite
 - delaying the boundary would keep the cart model ambiguous longer than necessary
 - the same shopping-cart contract can work with mock matching now and Walmart later
+
+Status:
+- implemented at the resource-boundary level
+- real retailer integration is still pending
 
 ## 28. Real Authentication Should Center On `/me` And Linked Identities
 
@@ -414,6 +424,10 @@ Recommended model direction:
 - `User`
 - `AuthIdentity`
 - optional `UserPreference`
+
+Status:
+- not implemented yet
+- this is now the next major backend milestone
 
 ## 29. Preferences Are Higher-Value Than Demographics For Onboarding
 
@@ -484,3 +498,21 @@ Examples:
 Why:
 - identity management, profile editing, and product stats are different concerns
 - cleaner route boundaries make future policy and ownership rules easier to maintain
+
+## 33. Backend Priorities Now Shift To Auth And Tags
+
+Decision:
+- after landing `/api/v1` and the `Cart`/`ShoppingCart` split, prioritize backend auth and taxonomy work before expanding frontend scope
+
+Near-term order:
+- real auth and `/me`
+- ownership and authorization tightening
+- hybrid tags
+- controlled cuisine taxonomy
+- retailer provider integration
+- broader frontend product work after those backend foundations are stable
+
+Why:
+- auth and tags affect ownership, filtering, and profile boundaries
+- those changes are cheaper now that the API surface is stable
+- deeper frontend work would otherwise be built on temporary backend assumptions
