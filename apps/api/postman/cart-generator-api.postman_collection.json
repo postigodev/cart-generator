@@ -8,8 +8,8 @@
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:3001" },
     { "key": "requestId", "value": "postman-local" },
-    { "key": "authEmail", "value": "" },
-    { "key": "authPassword", "value": "postman12345" },
+    { "key": "authEmail", "value": "postigodev@cart-generator.local" },
+    { "key": "authPassword", "value": "postigodev123" },
     { "key": "accessToken", "value": "" },
     { "key": "refreshToken", "value": "" },
     { "key": "cuisineId", "value": "" },
@@ -20,7 +20,8 @@
     { "key": "systemRecipeId", "value": "" },
     { "key": "recipeId", "value": "" },
     { "key": "cartId", "value": "" },
-    { "key": "shoppingCartId", "value": "" }
+    { "key": "shoppingCartId", "value": "" },
+    { "key": "userTagName", "value": "" }
   ],
   "item": [
     {
@@ -30,23 +31,16 @@
           "name": "Register",
           "event": [
             {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.collectionVariables.set('authEmail', 'postman-' + Date.now() + '@cart-generator.local');"
-                ]
-              }
-            },
-            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.response.to.have.status(201);",
-                  "const data = pm.response.json();",
-                  "pm.collectionVariables.set('accessToken', data.access_token);",
-                  "pm.collectionVariables.set('refreshToken', data.refresh_token);"
+                  "pm.expect(pm.response.code).to.be.oneOf([201, 409]);",
+                  "if (pm.response.code === 201) {",
+                  "  var data = pm.response.json();",
+                  "  pm.collectionVariables.set('accessToken', data.access_token);",
+                  "  pm.collectionVariables.set('refreshToken', data.refresh_token);",
+                  "}"
                 ]
               }
             }
@@ -57,7 +51,8 @@
               { "key": "Content-Type", "value": "application/json" },
               { "key": "x-request-id", "value": "{{requestId}}-register" }
             ],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{authEmail}}\",\n  \"name\": \"Postman User\",\n  \"password\": \"{{authPassword}}\"\n}" },
+            "description": "Optional manual request. The Newman smoke flow uses the seeded dev user through Login; this request is kept only to verify registration behavior manually.",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"postman-manual@example.com\",\n  \"name\": \"Postman User\",\n  \"password\": \"postman12345\"\n}" },
             "url": { "raw": "{{baseUrl}}/api/v1/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "register"] }
           }
         },
@@ -66,7 +61,7 @@
           "event": [
             {
               "listen": "test",
-              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(200);", "const data = pm.response.json();", "pm.collectionVariables.set('accessToken', data.access_token);", "pm.collectionVariables.set('refreshToken', data.refresh_token);"] }
+              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(200);", "var data = pm.response.json();", "pm.collectionVariables.set('accessToken', data.access_token);", "pm.collectionVariables.set('refreshToken', data.refresh_token);"] }
             }
           ],
           "request": {
@@ -84,7 +79,7 @@
           "event": [
             {
               "listen": "test",
-              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(200);", "const data = pm.response.json();", "pm.collectionVariables.set('accessToken', data.access_token);", "pm.collectionVariables.set('refreshToken', data.refresh_token);"] }
+              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(200);", "var data = pm.response.json();", "pm.collectionVariables.set('accessToken', data.access_token);", "pm.collectionVariables.set('refreshToken', data.refresh_token);"] }
             }
           ],
           "request": {
@@ -107,7 +102,7 @@
           "event": [
             {
               "listen": "test",
-              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(200);", "const data = pm.response.json();", "const peruvian = data.find((item) => item.slug === 'peruvian');", "const mediterranean = data.find((item) => item.slug === 'mediterranean');", "if (peruvian) pm.collectionVariables.set('cuisineId', peruvian.id);", "if (mediterranean) pm.collectionVariables.set('secondCuisineId', mediterranean.id);"] }
+              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(200);", "var data = pm.response.json();", "const peruvian = data.find((item) => item.slug === 'peruvian');", "const mediterranean = data.find((item) => item.slug === 'mediterranean');", "if (peruvian) pm.collectionVariables.set('cuisineId', peruvian.id);", "if (mediterranean) pm.collectionVariables.set('secondCuisineId', mediterranean.id);"] }
             }
           ],
           "request": {
@@ -121,7 +116,7 @@
           "event": [
             {
               "listen": "test",
-              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(200);", "const data = pm.response.json();", "if (data[0]) pm.collectionVariables.set('systemTagId', data[0].id);", "if (data[1]) pm.collectionVariables.set('secondSystemTagId', data[1].id);"] }
+              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(200);", "var data = pm.response.json();", "if (data[0]) pm.collectionVariables.set('systemTagId', data[0].id);", "if (data[1]) pm.collectionVariables.set('secondSystemTagId', data[1].id);"] }
             }
           ],
           "request": {
@@ -180,7 +175,7 @@
           "event": [
             {
               "listen": "test",
-              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(200);", "const data = pm.response.json();", "const systemRecipe = Array.isArray(data) ? data.find((item) => item.is_system_recipe) : null;", "if (systemRecipe) pm.collectionVariables.set('systemRecipeId', systemRecipe.id);"] }
+              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(200);", "var data = pm.response.json();", "const systemRecipe = Array.isArray(data) ? data.find((item) => item.is_system_recipe) : null;", "if (systemRecipe) pm.collectionVariables.set('systemRecipeId', systemRecipe.id);"] }
             }
           ],
           "request": {
@@ -194,7 +189,7 @@
           "event": [
             {
               "listen": "test",
-              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(201);", "const data = pm.response.json();", "pm.collectionVariables.set('recipeId', data.id);"] }
+              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(201);", "var data = pm.response.json();", "pm.collectionVariables.set('recipeId', data.id);"] }
             }
           ],
           "request": {
@@ -213,7 +208,7 @@
           "event": [
             {
               "listen": "test",
-              "script": { "type": "text/javascript", "exec": ["pm.expect(pm.response.code).to.be.oneOf([200, 201]);", "const data = pm.response.json();", "if (data.id) pm.collectionVariables.set('recipeId', data.id);"] }
+              "script": { "type": "text/javascript", "exec": ["pm.expect(pm.response.code).to.be.oneOf([200, 201]);", "var data = pm.response.json();", "if (data.id) pm.collectionVariables.set('recipeId', data.id);"] }
             }
           ],
           "request": {
@@ -236,8 +231,17 @@
           "name": "Create User Tag",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('userTagName', 'Postman Favorites ' + Date.now());"
+                ]
+              }
+            },
+            {
               "listen": "test",
-              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(201);", "const data = pm.response.json();", "pm.collectionVariables.set('userTagId', data.id);"] }
+              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(201);", "var data = pm.response.json();", "pm.collectionVariables.set('userTagId', data.id);"] }
             }
           ],
           "request": {
@@ -247,7 +251,7 @@
               { "key": "Authorization", "value": "Bearer {{accessToken}}" },
               { "key": "x-request-id", "value": "{{requestId}}-tags-create" }
             ],
-            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Postman Favorites\"\n}" },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"{{userTagName}}\"\n}" },
             "url": { "raw": "{{baseUrl}}/api/v1/tags", "host": ["{{baseUrl}}"], "path": ["api", "v1", "tags"] }
           }
         }
@@ -261,7 +265,7 @@
           "event": [
             {
               "listen": "test",
-              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(201);", "const data = pm.response.json();", "pm.collectionVariables.set('cartId', data.id);"] }
+              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(201);", "var data = pm.response.json();", "pm.collectionVariables.set('cartId', data.id);"] }
             }
           ],
           "request": {
@@ -280,7 +284,7 @@
           "event": [
             {
               "listen": "test",
-              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(201);", "const data = pm.response.json();", "pm.collectionVariables.set('shoppingCartId', data.id);"] }
+              "script": { "type": "text/javascript", "exec": ["pm.response.to.have.status(201);", "var data = pm.response.json();", "pm.collectionVariables.set('shoppingCartId', data.id);"] }
             }
           ],
           "request": {

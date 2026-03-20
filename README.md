@@ -111,6 +111,27 @@ pnpm typecheck
 
 ## Local API Setup
 
+Root shortcuts:
+
+```bash
+pnpm api:setup
+pnpm api:up
+pnpm api:reset
+```
+
+What they do:
+
+- `pnpm api:setup`
+Prepares the local backend without starting the server.
+Starts Postgres, generates Prisma client, applies existing migrations, and seeds local data.
+
+- `pnpm api:up`
+Starts Postgres if needed and then runs the API in dev mode.
+
+- `pnpm api:reset`
+Destructive.
+Resets the local API database, reapplies migrations, and reruns seed through Prisma.
+
 Start PostgreSQL:
 
 ```bash
@@ -134,6 +155,13 @@ Start the API:
 
 ```bash
 pnpm start:dev
+```
+
+Recommended first-time local flow:
+
+```bash
+pnpm api:setup
+pnpm api:up
 ```
 
 Useful API commands:

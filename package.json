@@ -7,8 +7,12 @@
     "dev": "pnpm -r --parallel --filter web --filter api run dev",
     "dev:web": "pnpm --filter web dev",
     "dev:api": "pnpm --filter api start:dev",
+    "api:setup": "docker compose -f infra/docker/docker-compose.yml up -d && pnpm --filter api prisma:generate && pnpm --dir apps/api exec prisma migrate deploy && pnpm --filter api db:seed",
+    "api:reset": "docker compose -f infra/docker/docker-compose.yml up -d && pnpm --dir apps/api exec prisma migrate reset --force",
+    "api:up": "docker compose -f infra/docker/docker-compose.yml up -d && pnpm dev:api",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
+    "postman:test": "pnpm --filter api postman:test",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r exec tsc --noEmit"
   },

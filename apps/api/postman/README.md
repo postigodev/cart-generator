@@ -7,17 +7,18 @@ Import these files into Postman:
 
 Suggested order:
 
-1. `Auth / Register`
-2. `Auth / Login`
+1. `Auth / Login`
+2. `Auth / Refresh`
 3. `Catalog / List Cuisines`
 4. `Catalog / List Tags (public)`
-5. `Me / Put Me Preferences`
-6. `Recipes / List Recipes (public)`
-7. `Recipes / Create Recipe`
-8. `Tags / Create User Tag`
-9. `Carts / Create Cart`
-10. `Carts / Create Shopping Cart From Cart`
-11. `Negative / ...`
+5. `Me / Get Me`
+6. `Me / Put Me Preferences`
+7. `Recipes / List Recipes (public)`
+8. `Recipes / Create Recipe`
+9. `Tags / Create User Tag`
+10. `Carts / Create Cart`
+11. `Carts / Create Shopping Cart From Cart`
+12. `Negative / ...`
 
 The collection uses these variables:
 
@@ -43,4 +44,25 @@ Notes:
 
 - the collection targets the current `/api/v1` contract
 - authenticated requests use `Authorization: Bearer {{accessToken}}`
+- the Newman smoke flow uses the seeded local dev user by default:
+  - `authEmail = postigodev@cart-generator.local`
+  - `authPassword = postigodev123`
+- `Auth / Register` is kept as an optional manual check, not as part of the deterministic smoke path
 - `Negative / Put Preferences With User Tag -> 403` assumes `Tags / Create User Tag` has already run
+
+CLI / Newman:
+
+- from the repo root: `pnpm postman:test`
+- directly in `apps/api`: `pnpm postman:test`
+
+Prerequisites:
+
+- the API is running at `http://localhost:3001`
+- local migrations are applied
+- local seed data exists so cuisines, system tags, and system recipes are available
+
+Recommended root flow before running Newman:
+
+1. `pnpm api:setup`
+2. `pnpm api:up`
+3. in another terminal: `pnpm postman:test`
