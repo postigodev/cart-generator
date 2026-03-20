@@ -251,7 +251,7 @@ This separation is intentional:
 
 The highest-signal next steps are in backend, not frontend expansion.
 
-1. Migrate the web app off the temporary `x-user-id` fallback onto bearer tokens and remove that fallback from normal protected flows.
+1. Remove the remaining `x-user-id` fallback from normal protected backend flows and Swagger guidance.
 2. Build the onboarding UI on top of `/api/v1/me/preferences`, `tags`, and `cuisines`.
 3. Keep retailer integration behind `ShoppingCart` and swap mock matching for a real provider later.
 4. Defer recipe variants and AI-assisted adaptation until auth and taxonomy are settled.
@@ -261,8 +261,7 @@ The highest-signal next steps are in backend, not frontend expansion.
 ## Current Gaps
 
 - the web app in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) is still a thin internal dashboard, not a full product UI
-- the web app still uses development-style API access and has not yet migrated to bearer-token auth
-- Google OAuth backend exists, but the web app does not expose that UX yet
+- the web app now uses email/password login with bearer-token auth, but it still does not expose Google login UX yet
 - there is no onboarding UI yet, even though backend preferences now exist
 - recipe variants and AI-assisted adaptation are not implemented yet
 - retailer matching is still mock data, not a real retailer integration

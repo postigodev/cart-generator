@@ -1,98 +1,26 @@
-type Recipe = {
-  id: string;
-  name: string;
-  cuisine?: string;
-  is_system_recipe: boolean;
-  servings: number;
-  tags?: string[];
-};
+import type {
+  BaseRecipe,
+  Cart,
+  CartSelection,
+  ShoppingCartHistorySummary,
+  User,
+} from "@cart/shared";
+import { logoutAction } from "./actions";
+import {
+  fetchAuthedCollection,
+  fetchAuthedResource,
+  fetchCollection,
+} from "@/lib/api";
 
-type CartDraft = {
+type DashboardCartDraft = {
   id: string;
+  user_id?: string;
   name?: string;
-  selections: Array<{
-    recipe_id: string;
-    recipe_type: "base" | "variant";
-    quantity: number;
-  }>;
+  selections: CartSelection[];
   retailer: string;
+  created_at: string;
   updated_at: string;
 };
-
-type Cart = {
-  id: string;
-  name?: string;
-  selections: Array<{
-    recipe_id: string;
-    recipe_type: "base" | "variant";
-    quantity: number;
-  }>;
-  dishes: Array<{
-    name: string;
-    servings?: number;
-  }>;
-  updated_at: string;
-};
-
-type ShoppingCartHistory = {
-  id: string;
-  cart_id: string;
-  retailer: string;
-  estimated_subtotal: number;
-  overview_count: number;
-  matched_item_count: number;
-  updated_at: string;
-};
-
-type Loadable<T> = {
-  ok: boolean;
-  data: T;
-  error?: string;
-};
-
-const API_BASE_URL =
-  process.env.API_BASE_URL ?? "http://localhost:3001/api/v1";
-const API_DEV_USER_ID =
-  process.env.API_DEV_USER_ID ?? "postigodev@cart-generator.local";
-
-async function fetchCollection<T>(
-  path: string,
-  authenticated = false,
-): Promise<Loadable<T[]>> {
-  try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      headers: authenticated ? { "x-user-id": API_DEV_USER_ID } : {},
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      const body = (await response.json().catch(() => null)) as
-        | { message?: string | string[] }
-        | null;
-      const message = Array.isArray(body?.message)
-        ? body?.message.join(", ")
-        : body?.message ?? `Request failed with ${response.status}`;
-
-      return {
-        ok: false,
-        data: [],
-        error: message,
-      };
-    }
-
-    return {
-      ok: true,
-      data: (await response.json()) as T[],
-    };
-  } catch (error) {
-    return {
-      ok: false,
-      data: [],
-      error:
-        error instanceof Error ? error.message : "Unknown network failure",
-    };
-  }
-}
 
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -151,16 +79,19 @@ function SectionShell(props: {
 }
 
 export default async function Home() {
-  const recipesPromise = fetchCollection<Recipe>("/recipes");
-  const draftsPromise = fetchCollection<CartDraft>("/cart-drafts", true);
-  const cartsPromise = fetchCollection<Cart>("/carts", true);
-  const shoppingHistoryPromise = fetchCollection<ShoppingCartHistory>(
-    "/shopping-carts/history",
-    true,
-  );
+  const recipesPromise = fetchCollection<BaseRecipe>("/recipes");
+  const mePromise = fetchAuthedResource<User>("/me");
+  const draftsPromise =
+    fetchAuthedCollection<DashboardCartDraft>("/cart-drafts");
+  const cartsPromise = fetchAuthedCollection<Cart>("/carts");
+  const shoppingHistoryPromise =
+    fetchAuthedCollection<ShoppingCartHistorySummary>(
+      "/shopping-carts/history",
+    );
 
-  const [recipes, drafts, carts, shoppingHistory] = await Promise.all([
+  const [recipes, me, drafts, carts, shoppingHistory] = await Promise.all([
     recipesPromise,
+    mePromise,
     draftsPromise,
     cartsPromise,
     shoppingHistoryPromise,
@@ -185,14 +116,35 @@ export default async function Home() {
                 Recipes become meal-plan carts. Carts become shopping carts.
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-[color:var(--paper-strong)]/82 sm:text-lg">
-                The web app is now pointed at the new <code>/api/v1</code>{" "}
-                contract. This dashboard reads recipes publicly, then switches
-                into authenticated internal mode for drafts, carts, and
-                shopping-cart history using the seeded dev actor header.
+                The web app now authenticates against the live{" "}
+                <code>/api/v1</code> contract using bearer tokens stored in
+                HTTP-only cookies. Public recipes stay readable, while drafts,
+                carts, and shopping-cart history now load through the real auth
+                path.
               </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="rounded-[1.5rem] border border-white/12 bg-white/8 p-4 backdrop-blur-sm">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[color:var(--paper-strong)]/72">
+                  Signed in
+                </div>
+                <div className="mt-2 text-lg font-semibold text-[color:var(--paper)]">
+                  {me.data?.name ?? "Unknown user"}
+                </div>
+                <div className="mt-1 text-sm text-[color:var(--paper-strong)]/78">
+                  {me.data?.email ?? "Missing profile"}
+                </div>
+                <form action={logoutAction} className="mt-4">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center rounded-full border border-white/14 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--paper)] transition hover:bg-white/16"
+                  >
+                    Sign out
+                  </button>
+                </form>
+              </div>
+
               {[
                 {
                   label: "Visible recipes",
@@ -235,7 +187,7 @@ export default async function Home() {
           <SectionShell
             eyebrow="Public read"
             title="Recipes"
-            note="These calls work without actor context and show the public/system catalog plus user-owned recipes when auth is added later."
+            note="These calls remain public and expose the visible recipe catalog without requiring user context in the web app."
           >
             <div className="mb-4 flex items-center justify-between">
               <StatusPill ok={recipes.ok} label={recipes.ok ? "Connected" : "Issue"} />
@@ -258,7 +210,7 @@ export default async function Home() {
                         {recipe.name}
                       </h3>
                       <p className="mt-1 text-sm text-[color:var(--ink-soft)]">
-                        {recipe.cuisine ?? "Unclassified"} · {recipe.servings} servings
+                        {recipe.cuisine.label} / {recipe.servings} servings
                       </p>
                     </div>
                     <span className="rounded-full bg-[color:var(--forest)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--paper)]">
@@ -266,12 +218,12 @@ export default async function Home() {
                     </span>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {(recipe.tags ?? []).slice(0, 4).map((tag) => (
+                    {recipe.tags.slice(0, 4).map((tag) => (
                       <span
-                        key={tag}
+                        key={tag.id}
                         className="rounded-full border border-[color:var(--line)] px-2.5 py-1 text-xs text-[color:var(--ink-soft)]"
                       >
-                        {tag}
+                        {tag.name}
                       </span>
                     ))}
                   </div>
@@ -283,7 +235,7 @@ export default async function Home() {
           <SectionShell
             eyebrow="Authenticated read"
             title="Drafts and Carts"
-            note={`Using actor ${API_DEV_USER_ID} to read internal resources backed by /api/v1.`}
+            note="These internal resources now resolve through the authenticated session instead of the temporary dev actor header."
           >
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <StatusPill ok={drafts.ok} label="Drafts" />
@@ -302,7 +254,7 @@ export default async function Home() {
                         {draft.name ?? "Untitled draft"}
                       </h3>
                       <p className="text-sm text-[color:var(--ink-soft)]">
-                        {draft.selections.length} selections · {draft.retailer}
+                        {draft.selections.length} selections / {draft.retailer}
                       </p>
                     </div>
                     <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--olive)]">
@@ -323,11 +275,11 @@ export default async function Home() {
                         {cart.name ?? "Unnamed cart"}
                       </h3>
                       <p className="text-sm text-[color:var(--ink-soft)]">
-                        {cart.selections.length} selections · {cart.dishes.length} dishes
+                        {cart.selections.length} selections / {cart.dishes.length} dishes
                       </p>
                     </div>
                     <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--olive)]">
-                      {formatDate(cart.updated_at)}
+                      {formatDate(cart.updated_at ?? new Date().toISOString())}
                     </span>
                   </div>
                 </article>

@@ -438,7 +438,8 @@ Status:
 - email/password auth, Google backend login, refresh tokens, and `/me` are implemented
 - `PATCH /me` is implemented
 - `/me/preferences` is implemented using explicit cuisine and tag relations
-- client migration and full ownership hardening are still in progress
+- the first web client migration to bearer-token auth is implemented
+- full ownership hardening and fallback removal are still in progress
 
 ## 29. Preferences Are Higher-Value Than Demographics For Onboarding
 
@@ -539,7 +540,7 @@ Why:
 ## 34. Keep `x-user-id` Only As A Temporary Development Fallback
 
 Decision:
-- keep `x-user-id` available only as a temporary development fallback while the web app has not yet migrated to bearer-token auth
+- keep `x-user-id` available only as a temporary development fallback while backend cleanup and tooling migration are still in progress
 - treat JWT bearer auth as the primary actor resolution path now
 
 Why:
@@ -548,4 +549,4 @@ Why:
 - keeping the fallback explicitly temporary avoids accidentally preserving it as a public contract
 
 Exit criteria:
-- once the web app uses bearer tokens end-to-end, remove `x-user-id` from normal protected flows and Swagger guidance
+- once local developer tooling and remaining fallback paths are cleaned up, remove `x-user-id` from normal protected flows and Swagger guidance

@@ -214,7 +214,7 @@ Temporary development fallback:
 - `x-user-id`
 - accepts seeded user id or seeded user email
 
-This header is still accepted as a temporary development fallback while the web app has not yet migrated to bearer-token auth.
+This header is still accepted as a temporary development fallback for local development and backward compatibility, but the web app no longer depends on it.
 
 ## Live API Shape
 
@@ -295,8 +295,8 @@ Not implemented yet:
 
 Purpose:
 
-- finish the client migration onto the already-implemented auth stack
-- remove the remaining temporary development fallback once the client is ready
+- harden the client integration now that the first bearer-token web slice is in place
+- remove the remaining temporary development fallback from backend flows and documentation
 
 Current implemented direction:
 
@@ -313,7 +313,8 @@ Current status:
 - `/me` is implemented
 - `PATCH /me` is implemented
 - `/me/preferences` is implemented for cuisine and system-tag preferences
-- client migration away from `x-user-id` is still pending
+- the web app now uses bearer-token auth for its dashboard flow
+- backend fallback removal is still pending
 
 ### 2. Hybrid Tags And Controlled Cuisine
 
