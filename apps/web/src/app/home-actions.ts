@@ -2,7 +2,10 @@
 
 import type {
   CartSelection,
+  MatchedIngredientProduct,
+  ProductCandidate,
   Retailer,
+  RetailerProductSearchResponse,
   ShoppingCart,
 } from "@cart/shared";
 import { cookies } from "next/headers";
@@ -26,6 +29,17 @@ export type DeletePlanningResourceActionState = {
 };
 
 export type CreateShoppingCartActionState = {
+  error?: string;
+  success?: string;
+  shoppingCart?: ShoppingCart;
+};
+
+export type SearchRetailerProductsActionState = {
+  error?: string;
+  results?: ProductCandidate[];
+};
+
+export type UpdateShoppingCartActionState = {
   error?: string;
   success?: string;
   shoppingCart?: ShoppingCart;
@@ -226,6 +240,78 @@ export async function createShoppingCartAction(
 
   return {
     success: "Shopping cart generated.",
+    shoppingCart,
+  };
+}
+
+export async function searchRetailerProductsAction(
+  retailer: Retailer,
+  query: string,
+): Promise<SearchRetailerProductsActionState> {
+  const normalizedQuery = query.trim();
+
+  if (!normalizedQuery) {
+    return {
+      results: [],
+    };
+  }
+
+  const params = new URLSearchParams({ query: normalizedQuery });
+  const response = await callAuthedJson(
+    `/retailers/${retailer}/products/search?${params.toString()}`,
+  ).catch(() => null);
+
+  if (!response?.ok) {
+    return {
+      error: "Unable to search retailer products right now.",
+    };
+  }
+
+  const payload = (await response.json()) as RetailerProductSearchResponse;
+
+  return {
+    results: payload.candidates,
+  };
+}
+
+export async function updateShoppingCartAction(
+  shoppingCartId: string,
+  matchedItems: MatchedIngredientProduct[],
+): Promise<UpdateShoppingCartActionState> {
+  const normalizedShoppingCartId = String(shoppingCartId).trim();
+
+  if (!normalizedShoppingCartId) {
+    return {
+      error: "Shopping cart not found for update.",
+    };
+  }
+
+  const response = await callAuthedJson(
+    `/shopping-carts/${normalizedShoppingCartId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        matched_items: matchedItems,
+      }),
+    },
+  ).catch(() => null);
+
+  if (!response?.ok) {
+    return {
+      error: "Unable to update this shopping cart right now.",
+    };
+  }
+
+  const shoppingCart = (await response.json()) as ShoppingCart;
+
+  revalidatePath("/");
+  revalidatePath("/recipes");
+
+  return {
+    success: "Shopping cart updated.",
     shoppingCart,
   };
 }

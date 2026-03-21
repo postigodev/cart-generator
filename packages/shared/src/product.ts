@@ -21,7 +21,9 @@ export type RetailerSearchCandidate = {
 };
 
 export type MatchedIngredientProduct = {
+  kind?: "ingredient_match" | "manual_item";
   canonical_ingredient: string;
+  manual_label?: string;
   needed_amount: number;
   needed_unit: string;
   matched_amount?: number;
@@ -33,4 +35,10 @@ export type MatchedIngredientProduct = {
   estimated_line_total?: number;
   fallback_used?: boolean;
   notes?: string;
+};
+
+export type RetailerProductSearchResponse = {
+  retailer: Retailer;
+  query: string;
+  candidates: ProductCandidate[];
 };

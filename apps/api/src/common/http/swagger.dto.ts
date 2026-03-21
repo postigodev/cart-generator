@@ -310,8 +310,14 @@ export class ProductCandidateResponseDto {
 }
 
 export class MatchedIngredientProductResponseDto {
+  @ApiPropertyOptional({ example: 'ingredient_match' })
+  kind?: 'ingredient_match' | 'manual_item';
+
   @ApiProperty({ example: 'rice' })
   canonical_ingredient!: string;
+
+  @ApiPropertyOptional({ example: 'Paper towels' })
+  manual_label?: string;
 
   @ApiProperty({ example: 4 })
   needed_amount!: number;
@@ -345,6 +351,17 @@ export class MatchedIngredientProductResponseDto {
 
   @ApiPropertyOptional({ example: 'Matched using converted tbsp package size' })
   notes?: string;
+}
+
+export class RetailerProductSearchResponseDto {
+  @ApiProperty({ example: 'walmart' })
+  retailer!: 'walmart';
+
+  @ApiProperty({ example: 'cilantro' })
+  query!: string;
+
+  @ApiProperty({ type: () => [ProductCandidateResponseDto] })
+  candidates!: ProductCandidateResponseDto[];
 }
 
 export class PersistedCartDraftResponseDto {

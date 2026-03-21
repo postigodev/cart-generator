@@ -178,6 +178,7 @@ Implemented entities:
 Current limitation:
 
 - matching is still mock-catalog based, not a real retailer integration
+- manual shopping-cart edits exist, but quantity editing and richer provider behavior are not implemented yet
 
 ### 6. Shopping Cart Layer
 
@@ -220,6 +221,7 @@ The current web app is intentionally split into separate surfaces:
 - the cart builder lives in a large overlay and can be entered from home or from recipe detail
 - draft detail and cart detail stay in overlays so the user can work without losing workspace context
 - shopping-cart detail now also opens as a large overlay from cart detail, so the retail output stays in the same workspace flow
+- the shopping-cart overlay can now edit the same persisted resource by replacing matched products, adding manual items, and deleting lines
 
 This keeps recipe exploration from competing with planning state on the same page.
 
@@ -232,6 +234,7 @@ Current interaction model:
 - draft/cart detail overlays can reopen the same builder in edit mode
 - draft/cart detail overlays can delete the current resource
 - cart detail can now call `POST /api/v1/carts/:cartId/shopping-carts` and open the returned `ShoppingCart` immediately in an overlay
+- shopping-cart detail can now search retailer products and persist manual edits through `PATCH /api/v1/shopping-carts/:id`
 
 Current transitional auth setup:
 

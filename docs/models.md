@@ -422,6 +422,7 @@ Current UI note:
 
 - `ShoppingCart` now has a first-class detail overlay in web, but it is still treated as derived output from `Cart`
 - the overlay should emphasize matched purchasable products and subtotal, not recipe editing
+- the same persisted `ShoppingCart` can now be manually corrected by replacing matches, adding manual items, and deleting lines
 
 ## 7. User Models
 

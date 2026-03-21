@@ -5,6 +5,7 @@ import type {
   CreateShoppingCartPersistenceInput,
   UpdateCartDraftPersistenceInput,
   UpdateCartPersistenceInput,
+  UpdateShoppingCartPersistenceInput,
 } from './cart.persistence.types';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -81,6 +82,21 @@ export class CartPersistenceRepository {
         matchedItems: input.shoppingCart.matched_items,
         estimatedSubtotal: input.shoppingCart.estimated_subtotal,
         estimatedTotal: input.shoppingCart.estimated_total,
+      },
+    });
+  }
+
+  updateShoppingCart(
+    userId: string,
+    id: string,
+    input: UpdateShoppingCartPersistenceInput,
+  ) {
+    return this.prisma.shoppingCart.updateMany({
+      where: { id, userId },
+      data: {
+        matchedItems: input.matched_items,
+        estimatedSubtotal: input.estimated_subtotal,
+        estimatedTotal: input.estimated_total,
       },
     });
   }

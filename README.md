@@ -25,6 +25,7 @@ The Next.js web app in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web)
 - draft creation, cart creation, draft detail, and cart detail all use large overlays instead of being the primary navigation path
 - draft/cart detail overlays now support edit and delete flows
 - cart detail can now generate a `ShoppingCart` and open its retailer-facing detail overlay in place
+- shopping-cart detail now supports manual editing over the same persisted resource: replace matches, add manual items, delete lines, and save
 - `/account/settings/*` holds account, preferences, and security
 
 ### API
@@ -48,6 +49,7 @@ The NestJS API in [apps/api](/C:/Users/akuma/repos/cart-generator/apps/api) curr
 - derived aggregated ingredient overviews on cart reads
 - deterministic ingredient aggregation and mock retailer matching behind shopping-cart generation
 - mock product matching with subtotal estimation
+- retailer product search and shopping-cart editing APIs behind the same shopping-cart boundary
 - internal `/api/v1` route families for `recipes`, `recipe-forks`, `cart-drafts`, `carts`, and `shopping-carts`
 - internal `/api/v1/tags` for visible system tags and user-owned tags
 - Swagger UI at `/docs`
@@ -225,6 +227,7 @@ Swagger:
 - `Cart` is the stable recipe-based meal plan snapshot with retailer context and a derived ingredient overview
 - `ShoppingCart` is the retailer-facing basket derived from a `Cart`
 - aggregation and retailer matching remain deterministic
+- `ShoppingCart` can now be manually corrected without regenerating a new planning artifact
 - dietary badges should come from tag metadata, not hardcoded booleans on recipes
 - `nutrition_data` is optional recipe detail metadata, not something every compact recipe card needs to show
 - generating a cart from an existing draft should consume that draft so recent work does not duplicate the same planning run
@@ -288,12 +291,15 @@ This separation is intentional:
 - draft/cart detail overlays now support delete flows
 - generating a cart from an existing draft now deletes that draft after successful cart creation
 - cart detail now supports `Generate shopping cart`, which opens a retailer-facing shopping-cart detail overlay on top of the same workspace
+- shopping-cart detail now supports manual correction on the same persisted resource
+- `/api/v1/retailers/:retailer/products/search` now exposes provider-backed product search behind the shopping-cart editor
+- `PATCH /api/v1/shopping-carts/:id` now persists manual shopping-cart edits
 
 ## Upcoming Work
 
 The next high-signal work is now more product-shaped than before.
 
-1. Expand the shopping-cart overlay from read-only output into a fuller purchase workspace, including history access and clearer repeat-generation behavior.
+1. Expand the shopping-cart workspace further with quantity editing, repeat-generation strategy, and first-class history/revisit flows.
 2. Add a clearer draft -> cart conversion affordance inside draft detail, beyond the generic composer action.
 3. Expand recipe library actions with `Fork/Edit` and a stronger owner/system distinction in the UI.
 4. Harden Google OAuth for production secret management and deploy configuration.

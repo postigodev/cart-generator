@@ -417,6 +417,7 @@ export const shoppingCartExample = {
   ],
   matched_items: [
     {
+      kind: 'ingredient_match',
       canonical_ingredient: 'chicken thigh',
       needed_amount: 800,
       needed_unit: 'g',
@@ -436,6 +437,7 @@ export const shoppingCartExample = {
       estimated_line_total: 7.96,
     },
     {
+      kind: 'ingredient_match',
       canonical_ingredient: 'rice',
       needed_amount: 2,
       needed_unit: 'cup',
@@ -460,6 +462,51 @@ export const shoppingCartExample = {
   retailer: 'walmart',
   created_at: '2026-03-19T03:15:00.000Z',
   updated_at: '2026-03-19T03:15:00.000Z',
+};
+
+export const updateShoppingCartRequestExample = {
+  matched_items: [
+    shoppingCartExample.matched_items[0],
+    {
+      ...shoppingCartExample.matched_items[1],
+      selected_quantity: 2,
+      estimated_line_total: 7.96,
+    },
+    {
+      kind: 'manual_item',
+      canonical_ingredient: 'sparkling water',
+      manual_label: 'Sparkling water',
+      needed_amount: 1,
+      needed_unit: 'unit',
+      walmart_search_query: 'sparkling water',
+      selected_product: {
+        product_id: 'walmart-water-1',
+        title: 'Sparkling Water 12 Pack',
+        brand: 'Clear American',
+        price: 5.49,
+        quantity_text: '12 pack',
+      },
+      selected_quantity: 1,
+      estimated_line_total: 5.49,
+      notes: 'Added manually',
+    },
+  ],
+};
+
+export const retailerProductSearchExample = {
+  retailer: 'walmart',
+  query: 'cilantro',
+  candidates: [
+    {
+      product_id: 'walmart-cilantro-1',
+      title: 'Fresh Cilantro Bunch',
+      brand: 'Fresh Produce',
+      price: 0.88,
+      size_value: 1,
+      size_unit: 'cup',
+      quantity_text: '1 bunch',
+    },
+  ],
 };
 
 export const shoppingCartListExample = [shoppingCartExample];

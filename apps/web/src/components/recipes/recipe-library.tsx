@@ -336,6 +336,11 @@ export function RecipeLibrary(props: {
       />
 
       <ShoppingCartDetailOverlay
+        key={
+          activeShoppingCart
+            ? `${activeShoppingCart.id ?? "shopping-cart"}:${activeShoppingCart.updated_at ?? activeShoppingCart.created_at ?? "open"}`
+            : "shopping-cart-none"
+        }
         shoppingCart={activeShoppingCart}
         onClose={() => setActiveShoppingCart(null)}
       />

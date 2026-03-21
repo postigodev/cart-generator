@@ -16,6 +16,7 @@ import type {
   PersistedShoppingCartHistorySummary,
   UpdateCartDraftPersistenceInput,
   UpdateCartPersistenceInput,
+  UpdateShoppingCartPersistenceInput,
 } from './persistence/cart.persistence.types';
 
 @Injectable()
@@ -59,6 +60,14 @@ export class CartPersistenceService {
       input,
     );
     return mapPersistedShoppingCart(shoppingCart);
+  }
+
+  updateShoppingCart(
+    userId: string,
+    id: string,
+    input: UpdateShoppingCartPersistenceInput,
+  ) {
+    return this.cartPersistenceRepository.updateShoppingCart(userId, id, input);
   }
 
   async findDraftsByUser(userId: string): Promise<PersistedCartDraft[]> {

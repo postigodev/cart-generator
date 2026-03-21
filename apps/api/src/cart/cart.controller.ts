@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -26,8 +27,10 @@ import {
   ApiListCarts,
   ApiListShoppingCartHistory,
   ApiListShoppingCarts,
+  ApiSearchRetailerProducts,
   ApiUpdateCart,
   ApiUpdateCartDraft,
+  ApiUpdateShoppingCart,
 } from './cart.swagger';
 import { CartService } from './cart.service';
 import { CreateCartDraftDto } from './dto/create-cart-draft.dto';
@@ -35,6 +38,7 @@ import { CreateCartDto } from './dto/create-cart.dto';
 import { CreateShoppingCartDto } from './dto/create-shopping-cart.dto';
 import { UpdateCartDraftDto } from './dto/update-cart-draft.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
+import { UpdateShoppingCartDto } from './dto/update-shopping-cart.dto';
 
 @Controller('api/v1')
 export class CartController {
@@ -185,5 +189,28 @@ export class CartController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.cartService.findShoppingCart(id, user.sub);
+  }
+
+  @Patch('shopping-carts/:id')
+  @UseGuards(RequestActorGuard)
+  @ApiCartController('shopping-carts')
+  @ApiUpdateShoppingCart()
+  updateShoppingCart(
+    @Param('id') id: string,
+    @Body() input: UpdateShoppingCartDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.cartService.updateShoppingCart(id, input, user.sub);
+  }
+
+  @Get('retailers/:retailer/products/search')
+  @UseGuards(RequestActorGuard)
+  @ApiCartController('retailer-products')
+  @ApiSearchRetailerProducts()
+  searchRetailerProducts(
+    @Param('retailer') retailer: 'walmart',
+    @Query('query') query: string,
+  ) {
+    return this.cartService.searchRetailerProducts(retailer, query);
   }
 }

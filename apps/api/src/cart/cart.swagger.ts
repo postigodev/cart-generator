@@ -14,6 +14,7 @@ import {
   CartResponseDto,
   ErrorResponseDto,
   PersistedCartDraftResponseDto,
+  RetailerProductSearchResponseDto,
   ShoppingCartHistorySummaryResponseDto,
   ShoppingCartResponseDto,
 } from '../common/http/swagger.dto';
@@ -24,14 +25,17 @@ import {
   createCartDraftRequestExample,
   createCartRequestExample,
   createShoppingCartRequestExample,
+  retailerProductSearchExample,
   shoppingCartExample,
   shoppingCartHistoryExample,
+  updateShoppingCartRequestExample,
 } from '../common/http/swagger.examples';
 import { CreateCartDraftDto } from './dto/create-cart-draft.dto';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { CreateShoppingCartDto } from './dto/create-shopping-cart.dto';
 import { UpdateCartDraftDto } from './dto/update-cart-draft.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
+import { UpdateShoppingCartDto } from './dto/update-shopping-cart.dto';
 
 export const ApiCartController = (tag: string) =>
   applyDecorators(ApiTags(tag));
@@ -360,6 +364,56 @@ export const ApiGetShoppingCart = () =>
     ApiNotFoundResponse({
       description: 'Shopping cart not found',
       type: ErrorResponseDto,
+    }),
+    ApiUnauthorizedResponse({
+      description: 'Authentication required',
+      type: ErrorResponseDto,
+    }),
+  );
+
+export const ApiUpdateShoppingCart = () =>
+  applyDecorators(
+    ApiOperation({ summary: 'Update a persisted shopping cart' }),
+    ApiBody({
+      type: UpdateShoppingCartDto,
+      required: true,
+      examples: {
+        shoppingCartUpdate: {
+          summary: 'Replace or add matched items manually',
+          value: updateShoppingCartRequestExample,
+        },
+      },
+    }),
+    ApiOkResponse({
+      description: 'Updated shopping cart',
+      type: ShoppingCartResponseDto,
+    }),
+    ApiNotFoundResponse({
+      description: 'Shopping cart not found',
+      type: ErrorResponseDto,
+    }),
+    ApiUnauthorizedResponse({
+      description: 'Authentication required',
+      type: ErrorResponseDto,
+    }),
+  );
+
+export const ApiSearchRetailerProducts = () =>
+  applyDecorators(
+    ApiOperation({ summary: 'Search retailer products by query' }),
+    ApiOkResponse({
+      description: 'Retailer search results',
+      type: RetailerProductSearchResponseDto,
+      content: {
+        'application/json': {
+          examples: {
+            walmartSearch: {
+              summary: 'Retailer product search',
+              value: retailerProductSearchExample,
+            },
+          },
+        },
+      },
     }),
     ApiUnauthorizedResponse({
       description: 'Authentication required',

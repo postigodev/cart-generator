@@ -1,6 +1,15 @@
 "use client";
 
-import type { ShoppingCart } from "@cart/shared";
+import type {
+  MatchedIngredientProduct,
+  ProductCandidate,
+  ShoppingCart,
+} from "@cart/shared";
+import { useMemo, useState, useTransition } from "react";
+import {
+  searchRetailerProductsAction,
+  updateShoppingCartAction,
+} from "@/app/home-actions";
 
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -26,20 +35,209 @@ function formatAmountLabel(amount?: number, unit?: string) {
   return [amount, unit].filter(Boolean).join(" ");
 }
 
+function calculateSubtotal(items: MatchedIngredientProduct[]) {
+  return Number(
+    items.reduce((sum, item) => sum + (item.estimated_line_total ?? 0), 0).toFixed(2),
+  );
+}
+
+function buildReplacedItem(
+  currentItem: MatchedIngredientProduct,
+  candidate: ProductCandidate,
+  query: string,
+): MatchedIngredientProduct {
+  const normalizedQuery = query.trim() || currentItem.walmart_search_query;
+
+  return {
+    ...currentItem,
+    kind: currentItem.kind ?? "ingredient_match",
+    walmart_search_query: normalizedQuery,
+    selected_product: candidate,
+    selected_quantity: 1,
+    estimated_line_total: Number(candidate.price.toFixed(2)),
+    notes:
+      currentItem.kind === "manual_item"
+        ? currentItem.notes
+        : "Replaced manually",
+  };
+}
+
+function buildManualItem(
+  candidate: ProductCandidate,
+  query: string,
+): MatchedIngredientProduct {
+  const label = query.trim() || candidate.title;
+
+  return {
+    kind: "manual_item",
+    canonical_ingredient: label,
+    manual_label: label,
+    needed_amount: 1,
+    needed_unit: "unit",
+    walmart_search_query: label,
+    selected_product: candidate,
+    selected_quantity: 1,
+    estimated_line_total: Number(candidate.price.toFixed(2)),
+    notes: "Added manually",
+  };
+}
+
+type SearchContext =
+  | {
+      mode: "replace";
+      index: number;
+      query: string;
+    }
+  | {
+      mode: "add";
+      query: string;
+    };
+
 export function ShoppingCartDetailOverlay(props: {
   shoppingCart: ShoppingCart | null;
   onClose: () => void;
 }) {
   const { onClose, shoppingCart } = props;
+  const [currentShoppingCart, setCurrentShoppingCart] =
+    useState<ShoppingCart | null>(shoppingCart);
+  const [isEditing, setEditing] = useState(false);
+  const [searchContext, setSearchContext] = useState<SearchContext | null>(null);
+  const [results, setResults] = useState<ProductCandidate[]>([]);
+  const [searchError, setSearchError] = useState<string | undefined>();
+  const [saveError, setSaveError] = useState<string | undefined>();
+  const [isSearching, startSearching] = useTransition();
+  const [isSaving, startSaving] = useTransition();
 
-  if (!shoppingCart) {
+  const subtotal = useMemo(
+    () =>
+      currentShoppingCart
+        ? calculateSubtotal(currentShoppingCart.matched_items)
+        : 0,
+    [currentShoppingCart],
+  );
+
+  if (!currentShoppingCart) {
     return null;
   }
 
   const updatedAt =
-    shoppingCart.updated_at ??
-    shoppingCart.created_at ??
+    currentShoppingCart.updated_at ??
+    currentShoppingCart.created_at ??
     new Date().toISOString();
+
+  function handleReplace(index: number) {
+    if (!currentShoppingCart) {
+      return;
+    }
+
+    const item = currentShoppingCart.matched_items[index];
+    setSearchContext({
+      mode: "replace",
+      index,
+      query: item.walmart_search_query || item.manual_label || item.canonical_ingredient,
+    });
+    setResults([]);
+    setSearchError(undefined);
+  }
+
+  function handleAddItem() {
+    setSearchContext({
+      mode: "add",
+      query: "",
+    });
+    setResults([]);
+    setSearchError(undefined);
+  }
+
+  function handleDeleteLine(index: number) {
+    if (!currentShoppingCart) {
+      return;
+    }
+
+    const nextItems = currentShoppingCart.matched_items.filter(
+      (_item, itemIndex) => itemIndex !== index,
+    );
+
+    setCurrentShoppingCart({
+      ...currentShoppingCart,
+      matched_items: nextItems,
+      estimated_subtotal: calculateSubtotal(nextItems),
+    });
+  }
+
+  function handleSelectCandidate(candidate: ProductCandidate) {
+    if (!searchContext || !currentShoppingCart) {
+      return;
+    }
+
+    const nextItems =
+      searchContext.mode === "replace"
+        ? currentShoppingCart.matched_items.map((item, index) =>
+            index === searchContext.index
+              ? buildReplacedItem(item, candidate, searchContext.query)
+              : item,
+          )
+        : [
+            ...currentShoppingCart.matched_items,
+            buildManualItem(candidate, searchContext.query),
+          ];
+
+    setCurrentShoppingCart({
+      ...currentShoppingCart,
+      matched_items: nextItems,
+      estimated_subtotal: calculateSubtotal(nextItems),
+    });
+    setSearchContext(null);
+    setResults([]);
+    setSearchError(undefined);
+  }
+
+  function handleSearch() {
+    if (!searchContext || !currentShoppingCart) {
+      return;
+    }
+
+    const retailer = currentShoppingCart.retailer;
+    const query = searchContext.query;
+    setSearchError(undefined);
+    startSearching(async () => {
+      const response = await searchRetailerProductsAction(retailer, query);
+
+      if (response.error) {
+        setSearchError(response.error);
+        return;
+      }
+
+      setResults(response.results ?? []);
+    });
+  }
+
+  function handleSaveChanges() {
+    if (!currentShoppingCart?.id) {
+      setSaveError("Shopping cart not found for update.");
+      return;
+    }
+
+    setSaveError(undefined);
+    startSaving(async () => {
+      const response = await updateShoppingCartAction(
+        currentShoppingCart.id ?? "",
+        currentShoppingCart.matched_items,
+      );
+
+      if (response.error || !response.shoppingCart) {
+        setSaveError(
+          response.error ?? "Unable to update this shopping cart right now.",
+        );
+        return;
+      }
+
+      setCurrentShoppingCart(response.shoppingCart);
+      setEditing(false);
+      setSearchContext(null);
+      setResults([]);
+    });
+  }
 
   return (
     <div className="fixed inset-0 z-[60] bg-[rgba(24,35,29,0.66)] p-4 backdrop-blur-sm sm:p-6">
@@ -53,21 +251,64 @@ export function ShoppingCartDetailOverlay(props: {
               Retailer output
             </h2>
             <p className="mt-2 text-sm text-[color:var(--ink-soft)]">
-              {shoppingCart.retailer} / {shoppingCart.matched_items.length} matched
-              items / updated {formatDate(updatedAt)}
+              {currentShoppingCart.retailer} /{" "}
+              {currentShoppingCart.matched_items.length} lines / updated{" "}
+              {formatDate(updatedAt)}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[color:var(--line)] bg-white/74 text-xl text-[color:var(--forest-strong)] transition hover:bg-white"
-            aria-label="Close shopping cart detail"
-          >
-            x
-          </button>
+          <div className="flex items-center gap-3">
+            {isEditing ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditing(false);
+                    setCurrentShoppingCart(shoppingCart);
+                    setSearchContext(null);
+                    setResults([]);
+                    setSearchError(undefined);
+                    setSaveError(undefined);
+                  }}
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--line)] bg-white/74 px-4 text-sm font-semibold text-[color:var(--forest-strong)] transition hover:bg-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveChanges}
+                  disabled={isSaving}
+                  className="inline-flex min-h-11 items-center justify-center rounded-full bg-[color:var(--forest)] px-4 text-sm font-semibold text-[color:var(--paper)] transition hover:bg-[color:var(--forest-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSaving ? "Saving..." : "Save changes"}
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-[color:var(--line)] bg-white/74 px-4 text-sm font-semibold text-[color:var(--forest-strong)] transition hover:bg-white"
+              >
+                Edit shopping cart
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[color:var(--line)] bg-white/74 text-xl text-[color:var(--forest-strong)] transition hover:bg-white"
+              aria-label="Close shopping cart detail"
+            >
+              x
+            </button>
+          </div>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+          {saveError ? (
+            <p className="mb-4 rounded-2xl border border-[color:var(--clay)]/20 bg-[color:var(--clay)]/10 px-4 py-3 text-sm text-[color:var(--clay)]">
+              {saveError}
+            </p>
+          ) : null}
+
           <div className="grid gap-6 xl:grid-cols-[1.45fr_0.92fr]">
             <section className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/52 p-5 sm:p-6">
               <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[color:var(--line)] pb-4">
@@ -84,38 +325,75 @@ export function ShoppingCartDetailOverlay(props: {
                     Estimated subtotal
                   </p>
                   <p className="mt-1 text-2xl font-semibold text-[color:var(--forest-strong)]">
-                    {formatMoney(shoppingCart.estimated_subtotal)}
+                    {formatMoney(subtotal)}
                   </p>
                 </div>
               </div>
 
               <ul className="grid gap-3 pt-5">
-                {shoppingCart.matched_items.map((item) => {
+                {currentShoppingCart.matched_items.map((item, index) => {
                   const selectedProduct = item.selected_product;
                   const selectedQuantity =
                     item.selected_quantity && item.selected_quantity > 1
                       ? `x${item.selected_quantity}`
                       : null;
+                  const lineTitle =
+                    item.kind === "manual_item"
+                      ? item.manual_label ?? item.canonical_ingredient
+                      : item.canonical_ingredient;
 
                   return (
                     <li
-                      key={`${item.canonical_ingredient}-${item.walmart_search_query}`}
-                      className="rounded-[1.2rem] border border-[color:var(--line)] bg-[rgba(255,255,255,0.74)] p-4"
+                      key={`${item.kind ?? "ingredient_match"}-${item.canonical_ingredient}-${index}`}
+                      className={`rounded-[1.2rem] border p-4 ${
+                        item.kind === "manual_item"
+                          ? "border-[color:var(--clay)]/20 bg-[color:var(--clay)]/6"
+                          : "border-[color:var(--line)] bg-[rgba(255,255,255,0.74)]"
+                      }`}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                          <p className="text-base font-semibold text-[color:var(--forest-strong)]">
-                            {item.canonical_ingredient}
-                          </p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-base font-semibold text-[color:var(--forest-strong)]">
+                              {lineTitle}
+                            </p>
+                            {item.kind === "manual_item" ? (
+                              <span className="rounded-full border border-[color:var(--clay)]/20 bg-[color:var(--clay)]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--clay)]">
+                                Manual item
+                              </span>
+                            ) : null}
+                          </div>
                           <p className="mt-1 text-sm text-[color:var(--ink-soft)]">
-                            Need {item.needed_amount} {item.needed_unit}
+                            {item.kind === "manual_item"
+                              ? "Added manually"
+                              : `Need ${item.needed_amount} ${item.needed_unit}`}
                           </p>
                         </div>
-                        {item.estimated_line_total !== undefined ? (
-                          <p className="text-sm font-semibold text-[color:var(--forest-strong)]">
-                            {formatMoney(item.estimated_line_total)}
-                          </p>
-                        ) : null}
+                        <div className="flex items-center gap-2">
+                          {item.estimated_line_total !== undefined ? (
+                            <p className="text-sm font-semibold text-[color:var(--forest-strong)]">
+                              {formatMoney(item.estimated_line_total)}
+                            </p>
+                          ) : null}
+                          {isEditing ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleReplace(index)}
+                                className="rounded-full border border-[color:var(--line)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--olive)] transition hover:bg-white"
+                              >
+                                Replace
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteLine(index)}
+                                className="rounded-full border border-[color:var(--clay)]/20 bg-[color:var(--clay)]/8 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--clay)] transition hover:bg-[color:var(--clay)]/12"
+                              >
+                                Delete
+                              </button>
+                            </>
+                          ) : null}
+                        </div>
                       </div>
 
                       {selectedProduct ? (
@@ -201,16 +479,36 @@ export function ShoppingCartDetailOverlay(props: {
 
             <aside className="grid gap-4">
               <section className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/52 p-5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--olive)]">
-                  Snapshot
-                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--olive)]">
+                      Snapshot
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-[color:var(--ink-soft)]">
+                      {isEditing
+                        ? "Replace ingredient matches or add manual lines, then save the shopping cart."
+                        : "This shopping cart is persisted. Edit only when you want to correct or add retailer products manually."}
+                    </p>
+                  </div>
+                  {isEditing ? (
+                    <button
+                      type="button"
+                      onClick={handleAddItem}
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[color:var(--forest)] text-xl font-semibold text-[color:var(--paper)] transition hover:bg-[color:var(--forest-strong)]"
+                      aria-label="Add manual shopping cart item"
+                    >
+                      +
+                    </button>
+                  ) : null}
+                </div>
+
                 <div className="mt-4 grid gap-4">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.14em] text-[color:var(--ink-soft)]">
                       Retailer
                     </p>
                     <p className="mt-1 text-base font-semibold text-[color:var(--forest-strong)]">
-                      {shoppingCart.retailer}
+                      {currentShoppingCart.retailer}
                     </p>
                   </div>
                   <div>
@@ -218,7 +516,7 @@ export function ShoppingCartDetailOverlay(props: {
                       Estimated subtotal
                     </p>
                     <p className="mt-1 text-base font-semibold text-[color:var(--forest-strong)]">
-                      {formatMoney(shoppingCart.estimated_subtotal)}
+                      {formatMoney(subtotal)}
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -227,7 +525,7 @@ export function ShoppingCartDetailOverlay(props: {
                         Overview
                       </p>
                       <p className="mt-1 text-lg font-semibold text-[color:var(--forest-strong)]">
-                        {shoppingCart.overview.length}
+                        {currentShoppingCart.overview.length}
                       </p>
                     </div>
                     <div className="rounded-[1rem] border border-[color:var(--line)] bg-[rgba(255,255,255,0.72)] px-4 py-3">
@@ -235,7 +533,7 @@ export function ShoppingCartDetailOverlay(props: {
                         Matches
                       </p>
                       <p className="mt-1 text-lg font-semibold text-[color:var(--forest-strong)]">
-                        {shoppingCart.matched_items.length}
+                        {currentShoppingCart.matched_items.length}
                       </p>
                     </div>
                   </div>
@@ -244,10 +542,124 @@ export function ShoppingCartDetailOverlay(props: {
 
               <section className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/52 p-5">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--olive)]">
+                  Product search
+                </p>
+
+                {searchContext ? (
+                  <div className="mt-4 grid gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-[color:var(--forest-strong)]">
+                        {searchContext.mode === "replace"
+                          ? "Replace selected line"
+                          : "Add manual item"}
+                      </p>
+                      <p className="mt-1 text-sm text-[color:var(--ink-soft)]">
+                        Search Walmart and choose a product to use in this shopping
+                        cart.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        type="search"
+                        value={searchContext.query}
+                        onChange={(event) =>
+                          setSearchContext({
+                            ...searchContext,
+                            query: event.target.value,
+                          })
+                        }
+                        placeholder="Search products"
+                        className="min-h-11 flex-1 rounded-2xl border border-[color:var(--line)] bg-white px-4 text-sm text-[color:var(--forest-strong)] outline-none transition placeholder:text-[color:var(--ink-soft)]/72 focus:border-[color:var(--olive)]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSearch}
+                        disabled={isSearching}
+                        className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-[color:var(--forest)] px-4 text-sm font-semibold text-[color:var(--paper)] transition hover:bg-[color:var(--forest-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isSearching ? "Searching..." : "Search"}
+                      </button>
+                    </div>
+
+                    {searchError ? (
+                      <p className="rounded-2xl border border-[color:var(--clay)]/20 bg-[color:var(--clay)]/10 px-4 py-3 text-sm text-[color:var(--clay)]">
+                        {searchError}
+                      </p>
+                    ) : null}
+
+                    {results.length > 0 ? (
+                      <ul className="grid gap-3">
+                        {results.map((candidate) => (
+                          <li
+                            key={candidate.product_id}
+                            className="rounded-[1rem] border border-[color:var(--line)] bg-[rgba(255,255,255,0.72)] p-3"
+                          >
+                            <div className="grid gap-3 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+                              <div className="h-16 w-16 overflow-hidden rounded-[0.9rem] border border-[color:var(--line)] bg-[color:var(--paper)]/72">
+                                {candidate.image_url ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={candidate.image_url}
+                                    alt={candidate.title}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="h-full w-full bg-[linear-gradient(135deg,rgba(115,135,101,0.12),rgba(245,240,228,0.44)),radial-gradient(circle_at_top_left,rgba(161,77,49,0.1),transparent_34%)]" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-[color:var(--forest-strong)]">
+                                  {candidate.title}
+                                </p>
+                                <p className="mt-1 text-xs uppercase tracking-[0.14em] text-[color:var(--ink-soft)]">
+                                  {candidate.brand ?? "Walmart"}
+                                </p>
+                                {candidate.quantity_text ? (
+                                  <p className="mt-2 text-xs text-[color:var(--ink-soft)]">
+                                    {candidate.quantity_text}
+                                  </p>
+                                ) : null}
+                              </div>
+                              <div className="grid justify-items-end gap-2">
+                                <p className="text-sm font-semibold text-[color:var(--forest-strong)]">
+                                  {formatMoney(candidate.price)}
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSelectCandidate(candidate)}
+                                  className="rounded-full border border-[color:var(--line)] bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--olive)] transition hover:bg-[color:var(--paper)]"
+                                >
+                                  Select
+                                </button>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="rounded-[1rem] border border-dashed border-[color:var(--line)] bg-[color:var(--paper)]/52 px-4 py-3 text-sm text-[color:var(--ink-soft)]">
+                        {isSearching
+                          ? "Searching Walmart..."
+                          : "Search to replace a match or add a manual item."}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-[1rem] border border-dashed border-[color:var(--line)] bg-[color:var(--paper)]/52 px-4 py-3 text-sm text-[color:var(--ink-soft)]">
+                    {isEditing
+                      ? "Pick a line to replace or use + to add a manual product."
+                      : "Enter edit mode to replace a matched product or add a manual item."}
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-[1.6rem] border border-[color:var(--line)] bg-white/52 p-5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--olive)]">
                   Ingredient menu
                 </p>
                 <ul className="mt-4 grid gap-3">
-                  {shoppingCart.overview.map((ingredient) => (
+                  {currentShoppingCart.overview.map((ingredient) => (
                     <li
                       key={`${ingredient.canonical_ingredient}-${ingredient.unit}`}
                       className="rounded-[1rem] border border-[color:var(--line)] bg-[rgba(255,255,255,0.72)] px-4 py-3"

@@ -317,6 +317,22 @@ Implications:
 - shopping-cart detail is read-only derived output for now
 - real retailer integration should replace the matching provider behind the same overlay flow
 
+## 23.6. ShoppingCart Should Be Editable In Place
+
+Decision:
+- keep `ShoppingCart` as a persisted resource that can be manually corrected in place
+
+Why:
+- automatic product matching will never be perfect
+- forcing users to regenerate shopping carts just to fix one line creates unnecessary provider load and worse UX
+- manual corrections should survive as part of the same purchase basket, not disappear into another temporary state
+
+Implications:
+- shopping-cart detail should support `Replace`, `Add item`, and `Delete`
+- manual additions should not be forced to map back to a recipe ingredient
+- backend should support retailer product search and `PATCH /api/v1/shopping-carts/:id`
+- real Walmart integration should later slot behind the same searchable/editable boundary
+
 ## 24. Replace Boolean Ownership Semantics With Clearer States Later
 
 Decision:

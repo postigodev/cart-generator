@@ -62,3 +62,9 @@ export type CreateShoppingCartPersistenceInput = {
   cartDraftId?: string;
   shoppingCart: Omit<ShoppingCart, 'id' | 'user_id' | 'created_at' | 'updated_at'>;
 };
+
+export type UpdateShoppingCartPersistenceInput = {
+  matched_items: ShoppingCart['matched_items'];
+  estimated_subtotal: ShoppingCart['estimated_subtotal'];
+  estimated_total?: ShoppingCart['estimated_total'];
+};

@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type {
   Cart,
   CreateCartRequest,
+  MatchedIngredientProduct,
+  Retailer,
   CreateShoppingCartRequest,
+  RetailerProductSearchResponse,
   ShoppingCart,
 } from '@cart/shared';
 import { AggregationService } from '../aggregation/aggregation.service';
@@ -20,6 +23,7 @@ import { CreateCartDto } from './dto/create-cart.dto';
 import { CreateShoppingCartDto } from './dto/create-shopping-cart.dto';
 import { UpdateCartDraftDto } from './dto/update-cart-draft.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
+import { UpdateShoppingCartDto } from './dto/update-shopping-cart.dto';
 
 @Injectable()
 export class CartService {
@@ -216,6 +220,57 @@ export class CartService {
     }
 
     return cart;
+  }
+
+  async updateShoppingCart(
+    id: string,
+    input: UpdateShoppingCartDto,
+    actorUserId?: string,
+  ) {
+    const actor = await this.userContextService.resolveActorUser(actorUserId);
+    const existing = await this.cartPersistenceService.findShoppingCartById(
+      actor.id,
+      id,
+    );
+
+    if (!existing) {
+      throw new NotFoundException(`Shopping cart ${id} not found`);
+    }
+
+    const matchedItems = (input.matched_items as MatchedIngredientProduct[]).map(
+      (item) => ({
+        ...item,
+        kind: item.kind ?? 'ingredient_match',
+      }),
+    );
+
+    const estimatedSubtotal = this.matchingService.estimateSubtotal(matchedItems);
+
+    const updated = await this.cartPersistenceService.updateShoppingCart(
+      actor.id,
+      id,
+      {
+        matched_items: matchedItems,
+        estimated_subtotal: estimatedSubtotal,
+      },
+    );
+
+    if (updated.count === 0) {
+      throw new NotFoundException(`Shopping cart ${id} not found`);
+    }
+
+    return this.findShoppingCart(id, actorUserId);
+  }
+
+  searchRetailerProducts(
+    retailer: Retailer,
+    query: string,
+  ): RetailerProductSearchResponse {
+    return {
+      retailer,
+      query,
+      candidates: this.matchingService.searchProducts(retailer, query),
+    };
   }
 
   private withCartOverview(cart: Cart): Cart {
