@@ -53,7 +53,10 @@ export async function submitDraftFlowAction(
     quantity: 1,
   }));
 
-  const name = `Planning run · ${recipeIds.length} recipe${recipeIds.length === 1 ? "" : "s"}`;
+  const customName = String(formData.get("name") ?? "").trim();
+  const name =
+    customName ||
+    `Planning run · ${recipeIds.length} recipe${recipeIds.length === 1 ? "" : "s"}`;
 
   const response = await callAuthedJson(
     intent === "save" ? "/cart-drafts" : "/carts",

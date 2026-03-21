@@ -50,6 +50,7 @@ export function NewDraftOverlay(props: {
     INITIAL_STATE,
   );
   const [query, setQuery] = useState("");
+  const [draftName, setDraftName] = useState("");
   const [showAllTags, setShowAllTags] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedRecipeIds, setSelectedRecipeIds] = useState<string[]>([]);
@@ -144,16 +145,37 @@ export function NewDraftOverlay(props: {
         >
           <section className="min-h-0 overflow-y-auto border-b border-[color:var(--line)] px-5 py-5 lg:border-b-0 lg:border-r lg:px-6">
             <div className="grid gap-4">
-              <label className="block">
-                <span className="sr-only">Search recipes</span>
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search dishes"
-                  className="min-h-11 w-full rounded-full border border-[color:var(--line)] bg-white px-4 text-sm text-[color:var(--forest-strong)] outline-none transition placeholder:text-[color:var(--ink-soft)]/72 focus:border-[color:var(--olive)]"
-                />
-              </label>
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <label className="block w-full max-w-xs">
+                  <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--olive)]">
+                    Draft name
+                  </span>
+                  <input
+                    type="text"
+                    name="name"
+                    value={draftName}
+                    onChange={(event) => setDraftName(event.target.value)}
+                    placeholder="Weeknight dinner plan"
+                    className="min-h-11 w-full rounded-2xl border border-[color:var(--line)] bg-white px-4 text-sm text-[color:var(--forest-strong)] outline-none transition placeholder:text-[color:var(--ink-soft)]/72 focus:border-[color:var(--olive)]"
+                  />
+                </label>
+
+                <label className="block w-full max-w-xl flex-1">
+                  <span className="sr-only">Search recipes</span>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[color:var(--ink-soft)]/72">
+                      ⌕
+                    </span>
+                    <input
+                      type="search"
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder="Search dishes"
+                      className="min-h-11 w-full rounded-full border border-[color:var(--line)] bg-white pl-10 pr-4 text-sm text-[color:var(--forest-strong)] outline-none transition placeholder:text-[color:var(--ink-soft)]/72 focus:border-[color:var(--olive)]"
+                    />
+                  </div>
+                </label>
+              </div>
 
               {availableTags.length > 0 ? (
                 <div className="flex flex-wrap items-center gap-2">
@@ -334,7 +356,7 @@ export function NewDraftOverlay(props: {
             </div>
             <p className="mt-3 text-xs leading-5 text-[color:var(--ink-soft)]">
               Save creates a draft. Generate cart creates the cart immediately
-              and returns you to the workspace.
+              using the same name when provided.
             </p>
           </aside>
         </form>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import type { PlanningItem } from "./recent-work.utils";
 
 function TypeBadge(props: { kind: PlanningItem["kind"] }) {
@@ -20,6 +21,7 @@ function TypeBadge(props: { kind: PlanningItem["kind"] }) {
 export function RecentWorkSection(props: {
   planningItems: PlanningItem[];
 }) {
+  const [activeTab, setActiveTab] = useState<"all" | "draft" | "cart">("all");
   const formatDate = (iso: string) =>
     new Intl.DateTimeFormat("en-US", {
       month: "short",
@@ -27,6 +29,21 @@ export function RecentWorkSection(props: {
       hour: "numeric",
       minute: "2-digit",
     }).format(new Date(iso));
+  const counts = useMemo(
+    () => ({
+      all: props.planningItems.length,
+      draft: props.planningItems.filter((item) => item.kind === "draft").length,
+      cart: props.planningItems.filter((item) => item.kind === "cart").length,
+    }),
+    [props.planningItems],
+  );
+  const visibleItems = useMemo(
+    () =>
+      props.planningItems.filter(
+        (item) => activeTab === "all" || item.kind === activeTab,
+      ),
+    [activeTab, props.planningItems],
+  );
 
   return (
     <section className="rounded-[2rem] border border-[color:var(--line)] bg-white/60 p-6 shadow-[var(--shadow)] backdrop-blur-sm">
@@ -35,11 +52,38 @@ export function RecentWorkSection(props: {
           <h2 className="font-display text-3xl leading-none text-[color:var(--forest-strong)]">
             Recent work
           </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            {([
+              ["all", "All"],
+              ["draft", "Drafts"],
+              ["cart", "Carts"],
+            ] as const).map(([value, label]) => {
+              const disabled = counts[value] === 0;
+              const active = activeTab === value;
+
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setActiveTab(value)}
+                  disabled={disabled}
+                  className={`inline-flex min-h-9 items-center rounded-full border px-3 text-xs font-semibold uppercase tracking-[0.14em] transition ${
+                    active
+                      ? "border-[color:var(--forest)] bg-[color:var(--forest)] text-[color:var(--paper)]"
+                      : "border-[color:var(--line)] bg-[color:var(--paper)]/72 text-[color:var(--ink-soft)] hover:bg-white"
+                  } ${disabled ? "cursor-not-allowed opacity-45 hover:bg-[color:var(--paper)]/72" : ""}`}
+                >
+                  {label}
+                  <span className="ml-2 opacity-75">{counts[value]}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {props.planningItems.length > 0 ? (
+        {visibleItems.length > 0 ? (
           <div className="grid gap-3">
-            {props.planningItems.map((item) => (
+            {visibleItems.map((item) => (
               <article
                 key={`${item.kind}-${item.id}`}
                 className="rounded-[1.45rem] border border-[color:var(--line)] bg-[color:var(--paper)]/68 px-4 py-4 transition hover:border-[color:var(--olive)]/26 hover:bg-[color:var(--paper)]/82"
@@ -64,11 +108,16 @@ export function RecentWorkSection(props: {
         ) : (
           <div className="rounded-[1.55rem] border border-dashed border-[color:var(--line)] bg-[color:var(--paper)]/52 px-5 py-6">
             <div className="text-lg font-semibold text-[color:var(--forest-strong)]">
-              No drafts yet
+              {activeTab === "draft"
+                ? "No drafts yet"
+                : activeTab === "cart"
+                  ? "No carts yet"
+                  : "No recent work yet"}
             </div>
             <p className="mt-2 max-w-xl text-sm leading-6 text-[color:var(--ink-soft)]">
-              Start with a new draft and it will appear here once planning
-              begins.
+              {activeTab === "cart"
+                ? "Generated carts will start showing up here once planning moves forward."
+                : "Start with a new draft and it will appear here once planning begins."}
             </p>
           </div>
         )}
