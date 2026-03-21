@@ -35,6 +35,7 @@ export type BaseRecipe = {
   cuisine_id: string;
   cuisine: Cuisine;
   description?: string;
+  cover_image_url?: string;
   servings: number;
   ingredients: DishIngredient[];
   steps: RecipeStep[];

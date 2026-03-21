@@ -90,6 +90,7 @@ model BaseRecipe {
   isSystemRecipe Boolean       @default(false)
   name        String
   description String?
+  coverImageUrl String?
   servings    Int
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt

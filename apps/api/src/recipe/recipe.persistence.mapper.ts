@@ -29,6 +29,7 @@ export const buildCreateRecipeData = (
   name: input.name,
   cuisineId: input.cuisine_id,
   description: input.description,
+  coverImageUrl: input.cover_image_url,
   servings: input.servings,
   ingredients: {
     create: input.ingredients.map(mapIngredientCreateInput),
@@ -42,6 +43,11 @@ export const buildUpdateRecipeData = (input: UpdateRecipeDto) => ({
   name: input.name,
   cuisineId: input.cuisine_id,
   description: input.description,
+  ...('cover_image_url' in input
+    ? {
+        coverImageUrl: input.cover_image_url ?? null,
+      }
+    : {}),
   servings: input.servings,
   ...(input.ingredients
     ? {

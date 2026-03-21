@@ -139,77 +139,103 @@ export function RecentWorkSection(props: {
             {props.recipes.map((recipe) => (
               <article
                 key={recipe.id}
-                className="flex min-h-[18rem] flex-col rounded-[1.55rem] border border-[color:var(--line)] bg-white/60 p-5"
+                className="flex min-h-[22rem] flex-col overflow-hidden rounded-[1.55rem] border border-[color:var(--line)] bg-white/60"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--olive)]">
-                      {recipe.cuisine.label}
+                {recipe.cover_image_url ? (
+                  <div className="relative h-44 overflow-hidden border-b border-[color:var(--line)] bg-[color:var(--paper)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={recipe.cover_image_url}
+                      alt={recipe.name}
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(24,35,29,0.02),rgba(24,35,29,0.26))]" />
+                  </div>
+                ) : (
+                  <div className="relative h-44 overflow-hidden border-b border-[color:var(--line)] bg-[linear-gradient(135deg,rgba(115,135,101,0.16),rgba(245,240,228,0.58)),radial-gradient(circle_at_top_left,rgba(161,77,49,0.18),transparent_34%)]">
+                    <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(24,35,29,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(24,35,29,0.06)_1px,transparent_1px)] [background-size:22px_22px]" />
+                    <div className="relative flex h-full flex-col justify-end p-5">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--olive)]">
+                        {recipe.cuisine.label}
+                      </div>
+                      <div className="mt-2 max-w-[12rem] font-display text-3xl leading-[0.92] text-[color:var(--forest-strong)]">
+                        {recipe.name}
+                      </div>
                     </div>
-                    <div className="mt-2 text-sm text-[color:var(--ink-soft)]">
-                      {recipe.servings} servings
+                  </div>
+                )}
+
+                <div className="flex flex-1 flex-col p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--olive)]">
+                        {recipe.cuisine.label}
+                      </div>
+                      <div className="mt-2 text-sm text-[color:var(--ink-soft)]">
+                        {recipe.servings} servings
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled
+                        className="inline-flex min-h-9 items-center rounded-full border border-[color:var(--line)] bg-[color:var(--paper)]/72 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-soft)] opacity-70"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        disabled
+                        className="inline-flex min-h-9 items-center rounded-full border border-[color:var(--clay)]/14 bg-[color:var(--clay)]/7 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--clay)] opacity-70"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      disabled
-                      className="inline-flex min-h-9 items-center rounded-full border border-[color:var(--line)] bg-[color:var(--paper)]/72 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-soft)] opacity-70"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      disabled
-                      className="inline-flex min-h-9 items-center rounded-full border border-[color:var(--clay)]/14 bg-[color:var(--clay)]/7 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--clay)] opacity-70"
-                    >
-                      Delete
-                    </button>
+                  <div className="mt-6 min-w-0">
+                    <h4 className="line-clamp-2 font-display text-[2rem] leading-[0.95] text-[color:var(--forest-strong)]">
+                      {recipe.name}
+                    </h4>
+                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-[color:var(--ink-soft)]">
+                      {recipe.description?.trim() ||
+                        "No description yet. This recipe is ready for planning, but still needs a short summary."}
+                    </p>
                   </div>
-                </div>
 
-                <div className="mt-6 min-w-0">
-                  <h4 className="line-clamp-2 font-display text-[2rem] leading-[0.95] text-[color:var(--forest-strong)]">
-                    {recipe.name}
-                  </h4>
-                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-[color:var(--ink-soft)]">
-                    {recipe.description?.trim() ||
-                      "No description yet. This recipe is ready for planning, but still needs a short summary."}
-                  </p>
-                </div>
-
-                <div className="mt-auto grid gap-4 pt-6">
-                  <div className="flex flex-wrap gap-2">
-                    {recipe.tags.length > 0 ? (
-                      recipe.tags.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag.id}
-                          className="rounded-full border border-[color:var(--olive)]/18 bg-[color:var(--olive)]/8 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[color:var(--forest-strong)]"
-                        >
-                          {tag.name}
+                  <div className="mt-auto grid gap-4 pt-6">
+                    <div className="flex flex-wrap gap-2">
+                      {recipe.tags.length > 0 ? (
+                        recipe.tags.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag.id}
+                            className="rounded-full border border-[color:var(--olive)]/18 bg-[color:var(--olive)]/8 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[color:var(--forest-strong)]"
+                          >
+                            {tag.name}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="rounded-full border border-[color:var(--line)] bg-[color:var(--paper)]/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[color:var(--ink-soft)]">
+                          No tags
                         </span>
-                      ))
-                    ) : (
-                      <span className="rounded-full border border-[color:var(--line)] bg-[color:var(--paper)]/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[color:var(--ink-soft)]">
-                        No tags
-                      </span>
-                    )}
-                  </div>
+                      )}
+                    </div>
 
-                  <div className="flex items-center justify-between gap-4 text-xs uppercase tracking-[0.16em] text-[color:var(--ink-soft)]">
-                    <span
-                      className={`rounded-full border px-3 py-1 ${
-                        recipe.is_system_recipe
-                          ? "border-[color:var(--line)] bg-[color:var(--paper)]/70 text-[color:var(--ink-soft)]"
-                          : "border-[color:var(--olive)]/18 bg-[color:var(--olive)]/8 text-[color:var(--forest-strong)]"
-                      }`}
-                    >
-                      {recipe.is_system_recipe ? "System" : "Mine"}
-                    </span>
-                    <span className="text-[color:var(--olive)]">
-                      {props.formatDate(recipe.updated_at)}
-                    </span>
+                    <div className="flex items-center justify-between gap-4 text-xs uppercase tracking-[0.16em] text-[color:var(--ink-soft)]">
+                      <span
+                        className={`rounded-full border px-3 py-1 ${
+                          recipe.is_system_recipe
+                            ? "border-[color:var(--line)] bg-[color:var(--paper)]/70 text-[color:var(--ink-soft)]"
+                            : "border-[color:var(--olive)]/18 bg-[color:var(--olive)]/8 text-[color:var(--forest-strong)]"
+                        }`}
+                      >
+                        {recipe.is_system_recipe ? "System" : "Mine"}
+                      </span>
+                      <span className="text-[color:var(--olive)]">
+                        {props.formatDate(recipe.updated_at)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </article>

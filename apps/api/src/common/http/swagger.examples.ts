@@ -38,6 +38,7 @@ export const recipeExample = {
   cuisine_id: 'cuisine-peruvian',
   cuisine: peruvianCuisineExample,
   description: 'Comforting chicken and rice dish.',
+  cover_image_url: 'https://images.example.com/recipes/arroz-con-pollo.jpg',
   servings: 4,
   ingredients: [
     {
@@ -170,6 +171,7 @@ export const createRecipeRequestExample = {
   name: 'Arroz con pollo casero',
   cuisine_id: 'cuisine-peruvian',
   description: 'Comforting chicken and rice dish.',
+  cover_image_url: 'https://images.example.com/recipes/arroz-con-pollo.jpg',
   servings: 4,
   ingredients: [
     {
@@ -205,6 +207,7 @@ export const updateRecipeRequestExample = {
   name: 'Arroz con pollo actualizado',
   cuisine_id: 'cuisine-peruvian',
   description: 'Updated family version with clearer steps.',
+  cover_image_url: null,
   servings: 6,
   ingredients: [
     {

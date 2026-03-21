@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ArrayMinSize,
@@ -6,7 +6,9 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsUrl,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import {
@@ -29,6 +31,15 @@ export class UpdateRecipeDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional({
+    example: 'https://images.example.com/recipes/arroz-con-pollo.jpg',
+    nullable: true,
+  })
+  @Transform(({ value }) => (value === '' ? null : value))
+  @ValidateIf((_object, value) => value !== null && value !== undefined)
+  @IsUrl()
+  cover_image_url?: string | null;
 
   @ApiPropertyOptional({ example: 6 })
   @IsOptional()

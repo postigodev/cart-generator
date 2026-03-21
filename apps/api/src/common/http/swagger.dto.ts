@@ -87,6 +87,11 @@ export class BaseRecipeResponseDto {
   @ApiPropertyOptional({ example: 'Comforting chicken and rice dish.' })
   description?: string;
 
+  @ApiPropertyOptional({
+    example: 'https://images.example.com/recipes/arroz-con-pollo.jpg',
+  })
+  cover_image_url?: string;
+
   @ApiProperty({ example: 4 })
   servings!: number;
 

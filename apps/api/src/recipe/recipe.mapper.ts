@@ -33,6 +33,7 @@ export const mapBaseRecipe = (
   cuisine_id: recipe.cuisineId,
   cuisine: mapCuisine(recipe.cuisine),
   description: recipe.description ?? undefined,
+  cover_image_url: recipe.coverImageUrl ?? undefined,
   servings: recipe.servings,
   ingredients: recipe.ingredients
     .slice()

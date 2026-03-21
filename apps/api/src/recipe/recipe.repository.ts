@@ -316,6 +316,7 @@ export class RecipeRepository {
           isSystemRecipe: false,
           name: sourceRecipe.name,
           description: sourceRecipe.description,
+          coverImageUrl: sourceRecipe.coverImageUrl,
           servings: sourceRecipe.servings,
           recipeTags: {
             create: (sourceRecipe.recipeTags ?? []).map((recipeTag) => ({
