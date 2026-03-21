@@ -2,7 +2,6 @@ import type {
   BaseRecipe,
   Cart,
   User,
-  UserPreferences,
   UserStats,
   ShoppingCartHistorySummary,
 } from "@cart/shared";
@@ -15,13 +14,11 @@ import {
 } from "@/lib/api";
 import { DashboardActionPanel } from "@/components/dashboard/dashboard-action-panel";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { DashboardStatsStrip } from "@/components/dashboard/dashboard-stats-strip";
 import type { DashboardCartDraft } from "@/components/dashboard/drafts-and-carts-section";
 import {
   buildPlanningItems,
   RecentWorkSection,
 } from "@/components/dashboard/recent-work-section";
-import { QuickAccessPanel } from "@/components/dashboard/quick-access-panel";
 
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -43,8 +40,6 @@ export default async function Home() {
   const recipesPromise = fetchCollection<BaseRecipe>("/recipes");
   const mePromise = fetchAuthedResource<User>("/me");
   const statsPromise = fetchAuthedResource<UserStats>("/me/stats");
-  const preferencesPromise =
-    fetchAuthedResource<UserPreferences>("/me/preferences");
   const draftsPromise =
     fetchAuthedCollection<DashboardCartDraft>("/cart-drafts");
   const cartsPromise = fetchAuthedCollection<Cart>("/carts");
@@ -53,12 +48,10 @@ export default async function Home() {
       "/shopping-carts/history",
     );
 
-  const [recipes, me, stats, preferences, drafts, carts, shoppingHistory] =
-    await Promise.all([
+  const [recipes, me, stats, drafts, carts, shoppingHistory] = await Promise.all([
     recipesPromise,
     mePromise,
     statsPromise,
-    preferencesPromise,
     draftsPromise,
     cartsPromise,
     shoppingHistoryPromise,
@@ -129,25 +122,6 @@ export default async function Home() {
       preferred_cuisine_count: 0,
       preferred_tag_count: 0,
     };
-  const safePreferences =
-    preferences.data ?? {
-      preferred_cuisine_ids: [],
-      preferred_cuisines: [],
-      preferred_tag_ids: [],
-      preferred_tags: [],
-    };
-  const suggestedRecipes = recipes.data
-    .filter((recipe) => {
-      const matchesCuisine = safePreferences.preferred_cuisine_ids.includes(
-        recipe.cuisine_id,
-      );
-      const matchesTag = recipe.tag_ids.some((tagId) =>
-        safePreferences.preferred_tag_ids.includes(tagId),
-      );
-
-      return matchesCuisine || matchesTag;
-    })
-    .slice(0, 3);
 
   return (
     <main className="min-h-screen px-5 py-6 sm:px-8 lg:px-12">
@@ -173,9 +147,7 @@ export default async function Home() {
           preferredTagCount={safeStats.preferred_tag_count}
         />
 
-        <DashboardStatsStrip stats={safeStats} />
-
-        <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <section className="grid gap-6">
           <RecentWorkSection
             planningItems={planningItems}
             recipes={recipes.data
@@ -185,14 +157,8 @@ export default async function Home() {
                   new Date(left.updated_at).getTime(),
               )
               .slice(0, 4)}
+            stats={safeStats}
             formatDate={formatDate}
-          />
-          <QuickAccessPanel
-            preferences={safePreferences}
-            suggestedRecipes={suggestedRecipes}
-            latestShopping={latestShopping}
-            formatDate={formatDate}
-            formatMoney={formatMoney}
           />
         </section>
       </div>
