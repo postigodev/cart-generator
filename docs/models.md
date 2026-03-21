@@ -235,6 +235,8 @@ Interpretation:
 
 - `CartDraft` is editable user intent
 - it is intentionally lighter-weight than a persisted `Cart`
+- in the current product UX it should be treated as incomplete saved work, not the main planning object
+- generating a `Cart` from a persisted draft should consume that draft by default
 
 ## 3. Cart Models
 
@@ -263,6 +265,7 @@ Interpretation:
 - it exposes a derived aggregated ingredient overview for cart-detail reads
 - it answers "what am I planning to cook?"
 - it should not own retailer-matching output directly
+- it is now the main planning object in the web UI once a run is generated
 
 Current runtime note:
 
@@ -270,6 +273,11 @@ Current runtime note:
 - `Cart` persists retailer because planning and purchase context should not disappear between draft and shopping-cart generation
 - `Cart.overview` is derived from `dishes` on read, not stored as a second persisted source of truth
 - `Cart` is the meal-plan snapshot, not the purchase basket
+
+Current UI note:
+
+- compact recipe cards should show dietary badges, not `nutrition_data`
+- `nutrition_data` belongs primarily to recipe detail surfaces
 
 ## 4. Aggregation Models
 

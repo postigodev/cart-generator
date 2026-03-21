@@ -2,7 +2,15 @@
 
 Cart Generator is a `pnpm` monorepo for turning saved recipes into recipe-based carts and derived shopping carts.
 
-The backend has already crossed the initial scaffold stage. The API now exposes the internal `/api/v1` contract, persists `CartDraft`, `Cart`, and `ShoppingCart` separately, and runs against local Postgres with Prisma migrations. The frontend exists mainly as a thin internal dashboard pointed at the new API surface; the next priority is still backend work.
+The backend is already well past the scaffold stage, and the web app is no longer just a thin dashboard. The current product already has:
+
+- real auth with email/password and Google login
+- required onboarding
+- account/settings and security
+- a planning home
+- a dedicated recipe library
+- draft/cart creation and editing through large overlays
+- persisted `CartDraft`, `Cart`, and `ShoppingCart` resources behind the internal `/api/v1` contract
 
 ## What Exists Today
 
@@ -10,9 +18,12 @@ The backend has already crossed the initial scaffold stage. The API now exposes 
 
 The Next.js web app in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) now splits product surfaces more explicitly:
 
-- `/` is the authenticated planning home for drafts, carts, and recent work
+- `/` is the authenticated planning home for recent carts and drafts
 - `/recipes` is the dedicated recipe library surface
-- `New draft`, draft detail, and cart detail use large overlays instead of being the primary navigation path
+- recipe detail opens as a large overlay
+- `Add to cart` from recipe detail opens the cart builder preloaded with that recipe
+- draft creation, cart creation, draft detail, and cart detail all use large overlays instead of being the primary navigation path
+- draft/cart detail overlays now support edit and delete flows
 - `/account/settings/*` holds account, preferences, and security
 
 ### API
@@ -28,6 +39,7 @@ The NestJS API in [apps/api](/C:/Users/akuma/repos/cart-generator/apps/api) curr
 - global system recipes and user-owned recipes
 - recipe CRUD for user-owned recipes
 - optional `cover_image_url` and `nutrition_data` on recipes
+- explicit dietary badge tags through `Tag.kind = dietary_badge`
 - an explicit fork flow for copying a system recipe into a user-owned editable recipe
 - persisted `cart-drafts`, `carts`, and `shopping-carts`
 - deterministic conversion from recipe selections into recipe-based carts
@@ -68,7 +80,7 @@ The main architecture and design notes live in:
 - [docs/decisions.md](/C:/Users/akuma/repos/cart-generator/docs/decisions.md)
 - [docs/models.md](/C:/Users/akuma/repos/cart-generator/docs/models.md)
 
-Those docs now describe the implemented `v1` direction and the next backend milestones.
+Those docs now describe the implemented `v1` direction, the current web product state, and the next product/backend milestones.
 
 ## Repository Layout
 
@@ -208,10 +220,13 @@ Swagger:
 - recipe writes now use `tag_ids`, and recipe reads return both `tag_ids` and expanded `tags`
 - forking a system recipe creates a user-owned editable copy
 - duplicate forks of the same source recipe are prevented per user
-- `CartDraft` is editable user intent
+- `CartDraft` is editable incomplete intent, not the main product object
 - `Cart` is the stable recipe-based meal plan snapshot with retailer context and a derived ingredient overview
 - `ShoppingCart` is the retailer-facing basket derived from a `Cart`
 - aggregation and retailer matching remain deterministic
+- dietary badges should come from tag metadata, not hardcoded booleans on recipes
+- `nutrition_data` is optional recipe detail metadata, not something every compact recipe card needs to show
+- generating a cart from an existing draft should consume that draft so recent work does not duplicate the same planning run
 
 ## Live API Shape
 
@@ -265,24 +280,30 @@ This separation is intentional:
 - Prisma migration `20260321130500_add_cart_retailer` materializes retailer persistence on `Cart`.
 - the web app dashboard in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) now reads the `/api/v1` endpoints and reflects the new model vocabulary.
 - the web app now separates planning home from recipe browsing: `/` focuses on planning state and recent work, while `/recipes` owns the recipe library.
+- `/recipes` now has recipe detail overlays with ingredients, steps, and `nutrition_data`
+- recipe detail now uses `Add to cart` instead of creating drafts immediately
+- the cart builder is now the central planning composer, and drafts are treated as secondary persistence for incomplete work
+- draft/cart detail overlays now support edit flows by reopening the same composer with hydrated selections, retailer, and name
+- draft/cart detail overlays now support delete flows
+- generating a cart from an existing draft now deletes that draft after successful cart creation
 
 ## Upcoming Work
 
-The highest-signal next steps are in backend, not frontend expansion.
+The next high-signal work is now more product-shaped than before.
 
-1. Keep retailer matching and purchasable-product state behind `ShoppingCart` and swap mock matching for a real provider later.
-2. Defer recipe variants and AI-assisted adaptation until auth and taxonomy are settled.
-3. Add captcha to sensitive auth surfaces after the core auth/client migration is stable.
-4. Expand account analytics beyond the first lightweight `/api/v1/me/stats` counters.
-5. Harden Google OAuth for production secret management and deploy configuration.
+1. Build the shopping-cart detail surface from `Cart`, so purchase-state has a first-class UI after meal planning.
+2. Add a clearer draft -> cart conversion affordance inside draft detail, beyond the generic composer action.
+3. Expand recipe library actions with `Fork/Edit` and a stronger owner/system distinction in the UI.
+4. Harden Google OAuth for production secret management and deploy configuration.
+5. Replace mock retailer matching with a real provider later, but keep that complexity behind `ShoppingCart`.
 
 ## Current Gaps
 
-- the web app in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) is still a thin internal dashboard, not a full product UI
-- the web app now supports email/password plus Google sign-in, but it is still a thin internal dashboard rather than a full product UI
-- onboarding now exists as a required first-run flow, and `/account` now exposes profile plus preference editing after setup
+- shopping-cart detail is not a first-class product surface yet
 - recipe variants and AI-assisted adaptation are not implemented yet
 - retailer matching is still mock data, not a real retailer integration
+- delete flows exist, but recovery/versioning does not
+- drafts and carts can now be edited, but there is still no broader history/timeline model for planning runs
 
 ## Practical Reading Guide
 

@@ -112,8 +112,9 @@ Implemented entities:
 Current status:
 
 - draft persistence exists
-- selection is currently request-driven and draft-driven
-- there is no dedicated UI flow yet
+- selection is currently draft-driven and cart-driven
+- the main composer now lives in a large overlay that can create a draft, create a cart, or edit an existing draft/cart
+- drafts are now treated as incomplete saved work, not the primary planning object
 
 ### 3. Cart Layer
 
@@ -135,6 +136,8 @@ Current status:
 - `Cart` now persists `retailer` so the planning context survives draft -> cart -> shopping-cart generation
 - cart reads now derive `overview` from persisted dishes instead of storing a second ingredient snapshot on the cart row
 - `Cart` is no longer collapsed into the generated shopping output
+- the web app now treats `Cart` as the primary planning artifact once a run is generated
+- generating a cart from an existing draft should delete the draft so planning state does not duplicate itself
 
 ### 4. Aggregation Layer
 
@@ -213,9 +216,20 @@ The current web app is intentionally split into separate surfaces:
 
 - `/` is the planning home
 - `/recipes` is the recipe browsing/library surface
-- draft creation and planning detail stay in overlays so the user can work without losing workspace context
+- recipe detail lives in an overlay on top of `/recipes`
+- the cart builder lives in a large overlay and can be entered from home or from recipe detail
+- draft detail and cart detail stay in overlays so the user can work without losing workspace context
 
 This keeps recipe exploration from competing with planning state on the same page.
+
+Current interaction model:
+
+- `Browse recipes` leads to `/recipes`
+- `Add to cart` from recipe detail opens the cart builder preloaded with that recipe
+- `Save draft` exists as a secondary persistence action inside the builder
+- `Generate cart` is the primary planning action
+- draft/cart detail overlays can reopen the same builder in edit mode
+- draft/cart detail overlays can delete the current resource
 
 Current transitional auth setup:
 
@@ -257,6 +271,14 @@ Persistent state today:
 - carts
 - shopping carts
 
+Persisted but secondary planning state:
+
+- `CartDraft`
+
+Primary planning state in the current UX:
+
+- `Cart`
+
 Derived but persisted shopping state:
 
 - resolved dishes
@@ -280,6 +302,11 @@ Not implemented yet:
 - raw LLM outputs
 - async matching jobs
 - real retailer provider integration
+
+Not first-class in UI yet:
+
+- shopping-cart detail/workflow
+- recovery or history after delete
 
 ## Current Infrastructure
 

@@ -270,7 +270,39 @@ Why:
 - mixing both on the same page made the home noisy and semantically confused
 - `New draft` can still open an overlay from home without turning the homepage into the recipe library again
 
-## 21. Replace Boolean Ownership Semantics With Clearer States Later
+## 22. Drafts Are Secondary, Carts Are Primary
+
+Decision:
+- treat `CartDraft` as incomplete saved work
+- treat `Cart` as the primary planning object once a run is generated
+
+Why:
+- drafts are useful, but they should not dominate the product language
+- users care more about the meal plan they are converging toward than the persistence mechanism for unfinished work
+- this keeps the UI centered on "build cart" and "continue planning", not on draft management as a product concept
+
+Implications:
+- recipe detail should say `Add to cart`, not `Add to draft`
+- the main composer should prioritize cart creation
+- `Save draft` should remain available as a secondary action
+- generating a cart from an existing draft should delete that draft by default
+
+## 23. One Composer Should Handle Create And Edit For Planning State
+
+Decision:
+- reuse one large planning overlay to create drafts, create carts, edit drafts, and edit carts
+
+Why:
+- name, retailer, and recipe selections are the same conceptual editing surface
+- separate create/edit UIs would drift quickly
+- overlays preserve workspace continuity better than page navigation for this product
+
+Implications:
+- draft detail and cart detail should reopen the same composer in edit mode
+- the composer must support hydrated selections, name, retailer, and resource identity
+- save semantics can vary by mode, but the interface stays shared
+
+## 24. Replace Boolean Ownership Semantics With Clearer States Later
 
 Decision:
 - `isSystemRecipe` is acceptable for the MVP, but it is not expressive enough for the long term
@@ -290,7 +322,7 @@ Pragmatic path:
 - keep `forkedFromRecipeId` as the current bridge state
 - revisit a richer enum-based model only when those states become real
 
-## 21.5. Recipe Nutrition Should Be Optional Derived Metadata
+## 24.5. Recipe Nutrition Should Be Optional Derived Metadata
 
 Decision:
 - add optional `nutrition_data` to recipes as a convenience snapshot
@@ -301,7 +333,7 @@ Why:
 - deterministic nutrition calculation can land later without changing recipe identity
 - an optional snapshot is cleaner than forcing LLM-generated nutrition into the primary model
 
-## 22. Development Identity Was Header-Based Before Real Auth
+## 25. Development Identity Was Header-Based Before Real Auth
 
 Decision:
 - the project temporarily used `x-user-id` during the pre-auth phase
@@ -314,7 +346,7 @@ Why:
 Status:
 - removed from normal backend flows and Swagger once the web app migrated to bearer tokens
 
-## 23. Saved Recipe Forks Must Be Unique Per User And Source Recipe
+## 26. Saved Recipe Forks Must Be Unique Per User And Source Recipe
 
 Decision:
 - a user may have at most one saved fork of a given source system recipe
@@ -329,7 +361,7 @@ Why:
 - makes the save action safe to repeat
 - protects against races between concurrent requests
 
-## 24. Cuisine Should Be A Controlled Taxonomy, Not A Free String
+## 27. Cuisine Should Be A Controlled Taxonomy, Not A Free String
 
 Decision:
 - keep `cuisine` as a separate concept from `tags`
@@ -370,7 +402,7 @@ Status:
 - implemented as a global `Cuisine` catalog
 - recipes now require `cuisine_id` on write and return expanded `cuisine` on read
 
-## 25. Internal API Should Use A Clean `v1` Boundary
+## 28. Internal API Should Use A Clean `v1` Boundary
 
 Decision:
 - use a clean internal API boundary under `/api/v1` before real auth and tags work
@@ -391,7 +423,7 @@ Why:
 Status:
 - implemented
 
-## 26. Cart And ShoppingCart Are Separate Domain Concepts
+## 29. Cart And ShoppingCart Are Separate Domain Concepts
 
 Decision:
 - separate the recipe-based meal plan from the retailer-facing purchase basket
@@ -413,7 +445,7 @@ Approved flow:
 Status:
 - implemented in API, shared types, and database schema
 
-## 27. ShoppingCart Generation Should Not Wait For LLM Integration
+## 30. ShoppingCart Generation Should Not Wait For LLM Integration
 
 Decision:
 - the shopping-cart resource and API boundary should exist before any LLM rollout
@@ -428,7 +460,7 @@ Status:
 - implemented at the resource-boundary level
 - real retailer integration is still pending
 
-## 28. Real Authentication Should Center On `/me` And Linked Identities
+## 31. Real Authentication Should Center On `/me` And Linked Identities
 
 Decision:
 - replace the current development header auth with a real account system
@@ -461,7 +493,7 @@ Status:
 - the first web client migration to bearer-token auth is implemented
 - ownership now resolves primarily through JWT and `/me`
 
-## 29. Preferences Are Higher-Value Than Demographics For Onboarding
+## 32. Preferences Are Higher-Value Than Demographics For Onboarding
 
 Decision:
 - do not prioritize demographic fields like `nationality` in the first real auth/profile rollout
@@ -488,7 +520,7 @@ Status:
 - onboarding UI is implemented as a required first-run flow with explicit skip support
 - post-onboarding account/preferences editing is now exposed in the web app through `/account`
 
-## 29.5. Onboarding Completion Must Be Separate From Preference Contents
+## 32.5. Onboarding Completion Must Be Separate From Preference Contents
 
 Decision:
 - do not infer onboarding completion from whether preference arrays are empty
@@ -503,7 +535,7 @@ Implemented direction:
 - `User.onboardingCompletedAt`
 - `POST /api/v1/me/onboarding/complete`
 
-## 30. Phone Auth Should Not Be In The First Auth Slice
+## 33. Phone Auth Should Not Be In The First Auth Slice
 
 Decision:
 - do not treat phone login as first-phase auth scope
@@ -514,7 +546,7 @@ Why:
 - Google + email/password is enough to unlock real ownership and profile flows
 - sequencing matters more than provider count in the MVP
 
-## 31. Account Security Should Focus On Sensitive Surfaces
+## 34. Account Security Should Focus On Sensitive Surfaces
 
 Decision:
 - use captcha and anti-abuse controls on sensitive auth flows, not everywhere
@@ -528,7 +560,7 @@ Why:
 - broad captcha usage hurts UX
 - the real value is protecting the abuse-prone entry points
 
-## 32. Auth API Should Distinguish Identity, Profile, And Analytics
+## 35. Auth API Should Distinguish Identity, Profile, And Analytics
 
 Decision:
 - separate auth routes from profile routes and user analytics routes
@@ -556,7 +588,7 @@ Status:
 - auth and `/me` route families are now implemented
 - `/me/stats` is now implemented as a lightweight counter surface
 
-## 33. Backend Priorities Now Shift To Auth And Tags
+## 36. Backend Priorities Now Shift To Auth And Tags
 
 Decision:
 - after landing `/api/v1` and the `Cart`/`ShoppingCart` split, prioritize backend auth and taxonomy work before expanding frontend scope
@@ -574,7 +606,7 @@ Why:
 - those changes are cheaper now that the API surface is stable
 - deeper frontend work would otherwise be built on temporary backend assumptions
 
-## 34. Remove `x-user-id` After Client Migration
+## 37. Remove `x-user-id` After Client Migration
 
 Decision:
 - once the web app and tooling use bearer tokens, remove `x-user-id` from normal protected flows and Swagger guidance
