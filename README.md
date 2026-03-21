@@ -6,6 +6,15 @@ The backend has already crossed the initial scaffold stage. The API now exposes 
 
 ## What Exists Today
 
+### Web App
+
+The Next.js web app in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) now splits product surfaces more explicitly:
+
+- `/` is the authenticated planning home for drafts, carts, and recent work
+- `/recipes` is the dedicated recipe library surface
+- `New draft`, draft detail, and cart detail use large overlays instead of being the primary navigation path
+- `/account/settings/*` holds account, preferences, and security
+
 ### API
 
 The NestJS API in [apps/api](/C:/Users/akuma/repos/cart-generator/apps/api) currently supports:
@@ -255,6 +264,7 @@ This separation is intentional:
 - Prisma migration `20260319124500_add_cuisine_catalog` materializes the controlled cuisine catalog and recipe relation.
 - Prisma migration `20260321130500_add_cart_retailer` materializes retailer persistence on `Cart`.
 - the web app dashboard in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web) now reads the `/api/v1` endpoints and reflects the new model vocabulary.
+- the web app now separates planning home from recipe browsing: `/` focuses on planning state and recent work, while `/recipes` owns the recipe library.
 
 ## Upcoming Work
 

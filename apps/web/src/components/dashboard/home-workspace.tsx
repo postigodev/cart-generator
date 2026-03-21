@@ -78,13 +78,13 @@ export function HomeWorkspace(props: {
     <>
       <DashboardActionPanel
         activePlanningState={props.activePlanningState}
-        onOpenDraft={openDraftOverlay}
       />
 
       <section className="grid gap-6">
         <RecentWorkSection
           planningItems={props.planningItems}
           onOpenDetail={openDetail}
+          onOpenDraft={openDraftOverlay}
         />
       </section>
 

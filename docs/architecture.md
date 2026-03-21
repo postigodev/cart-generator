@@ -207,6 +207,16 @@ Current behavior:
 - `/api/v1/me` is the authenticated profile boundary
 - `/api/v1/auth/*` provides register, login, Google login, refresh, and logout
 
+## Current Web Surfaces
+
+The current web app is intentionally split into separate surfaces:
+
+- `/` is the planning home
+- `/recipes` is the recipe browsing/library surface
+- draft creation and planning detail stay in overlays so the user can work without losing workspace context
+
+This keeps recipe exploration from competing with planning state on the same page.
+
 Current transitional auth setup:
 
 - JWT access tokens are the primary authenticated path

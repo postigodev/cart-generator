@@ -21,19 +21,18 @@ type ActivePlanningState =
 
 export function DashboardActionPanel(props: {
   activePlanningState: ActivePlanningState;
-  onOpenDraft: () => void;
 }) {
   const hasActivePlanning = Boolean(props.activePlanningState);
   const title = hasActivePlanning
     ? props.activePlanningState?.kind === "draft"
       ? "Resume your latest draft."
       : "Return to the current cart."
-    : "Start a new cart.";
+    : "Open the recipe library.";
   const description = hasActivePlanning
     ? props.activePlanningState?.kind === "draft"
       ? "Pick up where you left off and keep shaping the next cart."
       : "Review the latest cart and move it toward shopping."
-    : "Use the shelf below to pick dishes and start planning dinner.";
+    : "Browse the recipe shelf, scan dietary badges, and choose what to cook next.";
   const summary = props.activePlanningState
     ? props.activePlanningState.kind === "draft"
       ? `${props.activePlanningState.selectionsCount} selections · ${props.activePlanningState.retailer}`
@@ -64,28 +63,22 @@ export function DashboardActionPanel(props: {
             {hasActivePlanning ? (
               <Link
                 href="#recent-work"
-                className="inline-flex min-h-12 items-center rounded-full bg-[color:var(--paper)] px-5 text-sm font-semibold text-[color:var(--forest-strong)] shadow-[0_10px_30px_rgba(245,240,228,0.14)] transition hover:bg-white"
+                className="inline-flex min-h-12 items-center rounded-full bg-[color:var(--paper)] px-5 text-sm font-semibold text-[#173224] shadow-[0_10px_30px_rgba(245,240,228,0.14)] transition hover:bg-[#fffaf0]"
               >
                 Continue planning
               </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={props.onOpenDraft}
-                className="inline-flex min-h-12 items-center rounded-full bg-[color:var(--paper)] px-5 text-sm font-semibold text-[color:var(--forest-strong)] shadow-[0_10px_30px_rgba(245,240,228,0.14)] transition hover:bg-white"
-              >
-                New draft
-              </button>
-            )}
-            {hasActivePlanning ? (
-              <button
-                type="button"
-                onClick={props.onOpenDraft}
-                className="inline-flex min-h-12 items-center rounded-full border border-white/14 bg-white/8 px-5 text-sm font-semibold text-[color:var(--paper)] transition hover:bg-white/14"
-              >
-                New draft
-              </button>
             ) : null}
+
+            <Link
+              href="/recipes"
+              className={`inline-flex min-h-12 items-center rounded-full px-5 text-sm font-semibold transition ${
+                hasActivePlanning
+                  ? "border border-white/14 bg-white/8 text-[#f5f0e4] hover:bg-white/14 hover:text-white"
+                  : "bg-[color:var(--paper)] text-[#173224] shadow-[0_10px_30px_rgba(245,240,228,0.14)] hover:bg-[#fffaf0]"
+              }`}
+            >
+              Browse recipes
+            </Link>
           </div>
         </div>
 

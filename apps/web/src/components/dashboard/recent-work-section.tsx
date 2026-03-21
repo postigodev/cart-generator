@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import type { PlanningItem } from "./recent-work.utils";
 
 function TypeBadge(props: { kind: PlanningItem["kind"] }) {
@@ -21,8 +21,11 @@ function TypeBadge(props: { kind: PlanningItem["kind"] }) {
 export function RecentWorkSection(props: {
   planningItems: PlanningItem[];
   onOpenDetail: (detail: { type: "draft" | "cart"; id: string }) => void;
+  onOpenDraft: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<"all" | "draft" | "cart">("all");
+  const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
   const formatDate = (iso: string) =>
     new Intl.DateTimeFormat("en-US", {
       month: "short",
@@ -30,6 +33,7 @@ export function RecentWorkSection(props: {
       hour: "numeric",
       minute: "2-digit",
     }).format(new Date(iso));
+
   const counts = useMemo(
     () => ({
       all: props.planningItems.length,
@@ -38,12 +42,20 @@ export function RecentWorkSection(props: {
     }),
     [props.planningItems],
   );
+
+  const normalizedQuery = deferredQuery.trim().toLowerCase();
   const visibleItems = useMemo(
     () =>
-      props.planningItems.filter(
-        (item) => activeTab === "all" || item.kind === activeTab,
-      ),
-    [activeTab, props.planningItems],
+      props.planningItems.filter((item) => {
+        const matchesTab = activeTab === "all" || item.kind === activeTab;
+        const matchesQuery =
+          normalizedQuery.length === 0 ||
+          item.title.toLowerCase().includes(normalizedQuery) ||
+          item.subtitle.toLowerCase().includes(normalizedQuery);
+
+        return matchesTab && matchesQuery;
+      }),
+    [activeTab, normalizedQuery, props.planningItems],
   );
 
   return (
@@ -53,6 +65,30 @@ export function RecentWorkSection(props: {
           <h2 className="font-display text-3xl leading-none text-[color:var(--forest-strong)]">
             Recent work
           </h2>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={props.onOpenDraft}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--forest)] bg-[color:var(--forest)] text-xl font-semibold text-[color:var(--paper)] transition hover:bg-[color:var(--forest-strong)]"
+              aria-label="Create new draft"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <label className="block w-full lg:max-w-sm">
+            <span className="sr-only">Search recent work</span>
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search drafts and carts"
+              className="min-h-11 w-full rounded-full border border-[color:var(--line)] bg-[color:var(--paper)]/78 px-4 text-sm text-[color:var(--forest-strong)] outline-none transition placeholder:text-[color:var(--ink-soft)]/72 focus:border-[color:var(--olive)]"
+            />
+          </label>
+
           <div className="flex flex-wrap items-center gap-2">
             {([
               ["all", "All"],
@@ -94,9 +130,9 @@ export function RecentWorkSection(props: {
                     id: item.id,
                   })
                 }
-                className="rounded-[1.45rem] border border-[color:var(--line)] bg-[color:var(--paper)]/68 px-4 py-4 transition hover:border-[color:var(--olive)]/26 hover:bg-[color:var(--paper)]/82"
+                className="block w-full rounded-[1.45rem] border border-[color:var(--line)] bg-[color:var(--paper)]/68 px-4 py-4 text-left transition hover:border-[color:var(--olive)]/26 hover:bg-[color:var(--paper)]/82"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex w-full items-start justify-between gap-4">
                   <div className="min-w-0">
                     <TypeBadge kind={item.kind} />
                     <h3 className="mt-3 truncate text-lg font-semibold text-[color:var(--forest-strong)]">
@@ -108,9 +144,9 @@ export function RecentWorkSection(props: {
                   </div>
                   <span className="shrink-0 pt-1 text-xs uppercase tracking-[0.16em] text-[color:var(--olive)]">
                     {formatDate(item.updatedAt)}
-                    </span>
-                  </div>
-                </button>
+                  </span>
+                </div>
+              </button>
             ))}
           </div>
         ) : (
@@ -123,9 +159,11 @@ export function RecentWorkSection(props: {
                   : "No recent work yet"}
             </div>
             <p className="mt-2 max-w-xl text-sm leading-6 text-[color:var(--ink-soft)]">
-              {activeTab === "cart"
-                ? "Generated carts will start showing up here once planning moves forward."
-                : "Start with a new draft and it will appear here once planning begins."}
+              {normalizedQuery.length > 0
+                ? "Try a different search term."
+                : activeTab === "cart"
+                  ? "Generated carts will start showing up here once planning moves forward."
+                  : "Start with a new draft and it will appear here once planning begins."}
             </p>
           </div>
         )}

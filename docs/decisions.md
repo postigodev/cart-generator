@@ -259,6 +259,17 @@ Status:
 - `Tag.kind` should distinguish general taxonomy tags from dietary badge tags without splitting tags into another table
 - recipes now accept `tag_ids` on write and return expanded `tags` on read
 
+## 21. Recipe Browsing Should Be Separate From Planning Home
+
+Decision:
+- keep `/` focused on planning state, drafts, carts, and recent work
+- keep recipe exploration in a dedicated `/recipes` surface
+
+Why:
+- recipe discovery and active planning are different jobs
+- mixing both on the same page made the home noisy and semantically confused
+- `New draft` can still open an overlay from home without turning the homepage into the recipe library again
+
 ## 21. Replace Boolean Ownership Semantics With Clearer States Later
 
 Decision:

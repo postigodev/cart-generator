@@ -16,6 +16,7 @@ const ONBOARDING_PATH = "/onboarding";
 const ACCOUNT_PATH = "/account";
 const DRAFTS_PATH = "/drafts";
 const CARTS_PATH = "/carts";
+const RECIPES_PATH = "/recipes";
 
 function isProtectedAccountPath(pathname: string) {
   return pathname === ACCOUNT_PATH || pathname.startsWith(`${ACCOUNT_PATH}/`);
@@ -23,7 +24,9 @@ function isProtectedAccountPath(pathname: string) {
 
 function isProtectedWorkspacePath(pathname: string) {
   return (
-    pathname.startsWith(`${DRAFTS_PATH}/`) || pathname.startsWith(`${CARTS_PATH}/`)
+    pathname === RECIPES_PATH ||
+    pathname.startsWith(`${DRAFTS_PATH}/`) ||
+    pathname.startsWith(`${CARTS_PATH}/`)
   );
 }
 
@@ -105,6 +108,7 @@ export const config = {
     "/onboarding",
     "/account",
     "/account/:path*",
+    "/recipes",
     "/drafts/:path*",
     "/carts/:path*",
   ],
