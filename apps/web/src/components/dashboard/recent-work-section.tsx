@@ -23,7 +23,7 @@ export function RecentWorkSection(props: {
   onOpenDetail: (detail: { type: "draft" | "cart"; id: string }) => void;
   onOpenDraft: () => void;
 }) {
-  const [activeTab, setActiveTab] = useState<"all" | "draft" | "cart">("all");
+  const [activeTab, setActiveTab] = useState<"draft" | "cart">("cart");
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const formatDate = (iso: string) =>
@@ -36,7 +36,6 @@ export function RecentWorkSection(props: {
 
   const counts = useMemo(
     () => ({
-      all: props.planningItems.length,
       draft: props.planningItems.filter((item) => item.kind === "draft").length,
       cart: props.planningItems.filter((item) => item.kind === "cart").length,
     }),
@@ -47,7 +46,7 @@ export function RecentWorkSection(props: {
   const visibleItems = useMemo(
     () =>
       props.planningItems.filter((item) => {
-        const matchesTab = activeTab === "all" || item.kind === activeTab;
+        const matchesTab = item.kind === activeTab;
         const matchesQuery =
           normalizedQuery.length === 0 ||
           item.title.toLowerCase().includes(normalizedQuery) ||
@@ -91,9 +90,8 @@ export function RecentWorkSection(props: {
 
           <div className="flex flex-wrap items-center gap-2">
             {([
-              ["all", "All"],
-              ["draft", "Drafts"],
               ["cart", "Carts"],
+              ["draft", "Drafts"],
             ] as const).map(([value, label]) => {
               const disabled = counts[value] === 0;
               const active = activeTab === value;
@@ -130,11 +128,20 @@ export function RecentWorkSection(props: {
                     id: item.id,
                   })
                 }
-                className="block w-full rounded-[1.45rem] border border-[color:var(--line)] bg-[color:var(--paper)]/68 px-4 py-4 text-left transition hover:border-[color:var(--olive)]/26 hover:bg-[color:var(--paper)]/82"
+                className={`block w-full rounded-[1.45rem] px-4 py-4 text-left transition ${
+                  item.kind === "draft"
+                    ? "border border-dashed border-[color:var(--olive)]/28 bg-[rgba(245,240,228,0.52)] hover:border-[color:var(--olive)]/42 hover:bg-[rgba(245,240,228,0.7)]"
+                    : "border border-[color:var(--line)] bg-[color:var(--paper)]/68 hover:border-[color:var(--olive)]/26 hover:bg-[color:var(--paper)]/82"
+                }`}
               >
                 <div className="flex w-full items-start justify-between gap-4">
                   <div className="min-w-0">
                     <TypeBadge kind={item.kind} />
+                    {item.kind === "draft" ? (
+                      <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--olive)]/82">
+                        In progress
+                      </div>
+                    ) : null}
                     <h3 className="mt-3 truncate text-lg font-semibold text-[color:var(--forest-strong)]">
                       {item.title}
                     </h3>
@@ -154,9 +161,7 @@ export function RecentWorkSection(props: {
             <div className="text-lg font-semibold text-[color:var(--forest-strong)]">
               {activeTab === "draft"
                 ? "No drafts yet"
-                : activeTab === "cart"
-                  ? "No carts yet"
-                  : "No recent work yet"}
+                : "No carts yet"}
             </div>
             <p className="mt-2 max-w-xl text-sm leading-6 text-[color:var(--ink-soft)]">
               {normalizedQuery.length > 0
