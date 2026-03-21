@@ -3,16 +3,6 @@
 import type { AggregatedIngredient, BaseRecipe, Cart, Tag } from "@cart/shared";
 import type { DashboardCartDraft } from "@/components/dashboard/drafts-and-carts-section";
 
-const DIETARY_BADGE_SLUGS = [
-  "halal",
-  "vegan",
-  "vegetarian",
-  "gluten-free",
-  "dairy-free",
-  "nut-free",
-  "high-protein",
-] as const;
-
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -31,8 +21,7 @@ function getDietaryBadges(tags?: Tag[]) {
     return [];
   }
 
-  const bySlug = new Set(DIETARY_BADGE_SLUGS);
-  return tags.filter((tag) => bySlug.has(tag.slug as (typeof DIETARY_BADGE_SLUGS)[number]));
+  return tags.filter((tag) => tag.kind === "dietary_badge");
 }
 
 function RecipeReferenceCard(props: {

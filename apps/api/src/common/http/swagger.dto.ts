@@ -156,6 +156,9 @@ export class TagResponseDto {
   @ApiProperty({ example: 'system' })
   scope!: 'system' | 'user';
 
+  @ApiProperty({ example: 'general' })
+  kind!: 'general' | 'dietary_badge';
+
   @ApiProperty({ example: '2026-03-19T03:12:00.000Z' })
   created_at!: string;
 

@@ -14,7 +14,12 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ErrorResponseDto, TagResponseDto } from '../common/http/swagger.dto';
-import { badRequestErrorExample, systemTagExample, userTagExample } from '../common/http/swagger.examples';
+import {
+  badRequestErrorExample,
+  dietaryBadgeTagExample,
+  systemTagExample,
+  userTagExample,
+} from '../common/http/swagger.examples';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 
@@ -32,7 +37,7 @@ export const ApiListTags = () =>
           examples: {
             visibleTags: {
               summary: 'Visible tags',
-              value: [systemTagExample, userTagExample],
+              value: [systemTagExample, dietaryBadgeTagExample, userTagExample],
             },
           },
         },

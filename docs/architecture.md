@@ -96,6 +96,7 @@ Implemented rules:
 - saving a system recipe creates a user-owned editable fork
 - duplicate forks of the same source recipe are prevented per user
 - recipe reads can now carry optional `nutrition_data` as derived metadata without replacing structured ingredients
+- recipe reads now also carry expanded tag metadata, so dietary badges can be represented as explicit `Tag.kind = dietary_badge`
 
 ### 2. Selection Layer
 

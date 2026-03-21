@@ -2,6 +2,18 @@ const { systemRecipes } = require("./data/system-recipes");
 const { userRecipes } = require("./data/user-recipes");
 const { resolveCuisineId } = require("./cuisines");
 
+const DIETARY_BADGE_SLUGS = new Set([
+  "halal",
+  "vegan",
+  "vegetarian",
+  "gluten-free",
+  "dairy-free",
+  "nut-free",
+  "high-protein",
+  "low-carb",
+  "spicy",
+]);
+
 function normalizeTagName(tag) {
   return tag.trim().replace(/\s+/g, " ");
 }
@@ -23,6 +35,7 @@ async function connectRecipeTags(prisma, recipeId, ownerUserId, isSystemRecipe, 
   ).map(([slug, name]) => ({ slug, name }));
 
   for (const tag of uniqueTags) {
+    const kind = DIETARY_BADGE_SLUGS.has(tag.slug) ? "dietary_badge" : "general";
     const systemTag = await prisma.tag.findFirst({
       where: {
         scope: "system",
@@ -38,6 +51,7 @@ async function connectRecipeTags(prisma, recipeId, ownerUserId, isSystemRecipe, 
               name: tag.name,
               slug: tag.slug,
               scope: "system",
+              kind,
             },
           })
         : null);
@@ -61,13 +75,25 @@ async function connectRecipeTags(prisma, recipeId, ownerUserId, isSystemRecipe, 
           slug: tag.slug,
           scope: "user",
           ownerUserId,
+          kind: "general",
         },
       });
-    } else if (userTag.name !== tag.name) {
+    } else if (userTag.name !== tag.name || userTag.kind !== "general") {
       userTag = await prisma.tag.update({
         where: { id: userTag.id },
         data: {
           name: tag.name,
+          kind: "general",
+        },
+      });
+    }
+
+    if (resolvedTag && (resolvedTag.name !== tag.name || resolvedTag.kind !== kind)) {
+      await prisma.tag.update({
+        where: { id: resolvedTag.id },
+        data: {
+          name: tag.name,
+          kind,
         },
       });
     }

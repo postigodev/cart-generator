@@ -195,7 +195,7 @@ Swagger:
 - cuisines are now explicit global resources with `kind`-based curation
 - recipe writes now use `cuisine_id`, and recipe reads return both `cuisine_id` and expanded `cuisine`
 - tags are now explicit resources with `system` and `user` scope
-- dietary badges like `halal`, `vegan`, and `gluten-free` should be represented as curated system tags
+- tags now also carry `kind`, so dietary badges like `halal`, `vegan`, and `gluten-free` are explicit curated system tags with `kind = dietary_badge`
 - recipe writes now use `tag_ids`, and recipe reads return both `tag_ids` and expanded `tags`
 - forking a system recipe creates a user-owned editable copy
 - duplicate forks of the same source recipe are prevented per user
@@ -246,6 +246,7 @@ This separation is intentional:
 - `/api/v1/me/preferences` now supports read/replace for user cuisine and system-tag preferences.
 - `/api/v1/me/onboarding/complete` now marks onboarding completion independently from preferences.
 - `/api/v1/tags` now supports list/create/update/delete.
+- `/api/v1/tags` now returns `kind` so clients can distinguish general taxonomy tags from dietary badge tags.
 - `POST /api/v1/recipe-forks` replaced the old save-style route.
 - recipes now require `cuisine_id` and return expanded `cuisine` objects.
 - carts now require `retailer` on write and return derived `overview` ingredient data on read.

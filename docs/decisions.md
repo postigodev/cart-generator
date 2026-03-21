@@ -256,6 +256,7 @@ Why:
 Status:
 - implemented in persistence and via `/api/v1/tags`
 - dietary badges should piggyback on curated system tags instead of new boolean columns
+- `Tag.kind` should distinguish general taxonomy tags from dietary badge tags without splitting tags into another table
 - recipes now accept `tag_ids` on write and return expanded `tags` on read
 
 ## 21. Replace Boolean Ownership Semantics With Clearer States Later

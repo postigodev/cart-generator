@@ -26,7 +26,7 @@ This file is a readable map of those contracts plus the now-implemented conceptu
 - user models: who owns what
 - auth models: how identities and sessions attach to users
 - cuisine models: controlled culinary classification
-- tag models: shared taxonomy plus private organization
+- tag models: shared taxonomy plus private organization, including explicit dietary badge tags
 
 ## 1. Recipe Models
 
@@ -110,6 +110,28 @@ Important current semantics:
 - `owner_user_id` is set for user-owned recipes
 - `forked_from_recipe_id` is set when a user saves a system recipe into an editable copy
 - `nutrition_data` is optional derived recipe metadata, not the source of truth for ingredients
+- dietary badges should come from expanded `tags` where `kind = dietary_badge`, not from recipe-local booleans
+
+### Tag
+
+```ts
+type Tag = {
+  id: string;
+  owner_user_id?: string;
+  name: string;
+  slug: string;
+  scope: "system" | "user";
+  kind: "general" | "dietary_badge";
+  created_at: string;
+  updated_at: string;
+};
+```
+
+Current semantics:
+
+- `scope` answers who owns or shares the tag
+- `kind` answers what the tag means in the taxonomy
+- dietary badges like `vegan`, `halal`, and `gluten-free` stay in the same `Tag` table, but are explicitly marked as `dietary_badge`
 
 ### RecipeTransformationType
 

@@ -7,6 +7,7 @@ export const mapTag = (tag: PrismaTag): Tag => ({
   name: tag.name,
   slug: tag.slug,
   scope: tag.scope,
+  kind: tag.kind,
   created_at: tag.createdAt.toISOString(),
   updated_at: tag.updatedAt.toISOString(),
 });

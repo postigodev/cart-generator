@@ -81,6 +81,7 @@ export const recipeExample = {
       name: 'Dinner',
       slug: 'dinner',
       scope: 'system',
+      kind: 'general',
       created_at: '2026-03-19T03:12:00.000Z',
       updated_at: '2026-03-19T03:12:00.000Z',
     },
@@ -90,6 +91,7 @@ export const recipeExample = {
       name: 'Comfort Food',
       slug: 'comfort-food',
       scope: 'user',
+      kind: 'general',
       created_at: '2026-03-19T03:12:00.000Z',
       updated_at: '2026-03-19T03:12:00.000Z',
     },
@@ -106,6 +108,18 @@ export const systemTagExample = {
   name: 'Weeknight',
   slug: 'weeknight',
   scope: 'system',
+  kind: 'general',
+  created_at: '2026-03-19T03:12:00.000Z',
+  updated_at: '2026-03-19T03:12:00.000Z',
+};
+
+export const dietaryBadgeTagExample = {
+  id: 'tag-system-gluten-free',
+  owner_user_id: undefined,
+  name: 'Gluten-Free',
+  slug: 'gluten-free',
+  scope: 'system',
+  kind: 'dietary_badge',
   created_at: '2026-03-19T03:12:00.000Z',
   updated_at: '2026-03-19T03:12:00.000Z',
 };
@@ -116,6 +130,7 @@ export const userTagExample = {
   name: 'My Favorites',
   slug: 'my-favorites',
   scope: 'user',
+  kind: 'general',
   created_at: '2026-03-19T03:12:00.000Z',
   updated_at: '2026-03-19T03:12:00.000Z',
 };
@@ -141,6 +156,7 @@ export const mePreferencesExample = {
       name: 'Comfort Food',
       slug: 'comfort-food',
       scope: 'system',
+      kind: 'general',
       created_at: '2026-03-19T03:12:00.000Z',
       updated_at: '2026-03-19T03:12:00.000Z',
     },

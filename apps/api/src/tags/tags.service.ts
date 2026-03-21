@@ -37,7 +37,7 @@ export class TagsService {
         : {
             scope: 'system',
           },
-      orderBy: [{ scope: 'asc' }, { name: 'asc' }],
+      orderBy: [{ scope: 'asc' }, { kind: 'asc' }, { name: 'asc' }],
     });
 
     return tags.map(mapTag);
@@ -55,6 +55,7 @@ export class TagsService {
         name,
         slug,
         scope: 'user',
+        kind: 'general',
       },
     });
 
