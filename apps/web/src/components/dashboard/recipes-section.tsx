@@ -41,10 +41,13 @@ export function RecipesSection(props: { recipes: Loadable<BaseRecipe[]> }) {
               </span>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
-              {recipe.tags.slice(0, 4).map((tag) => (
+              {recipe.tags
+                .filter((tag) => tag.kind === "dietary_badge")
+                .slice(0, 4)
+                .map((tag) => (
                 <span
                   key={tag.id}
-                  className="rounded-full border border-[color:var(--line)] px-2.5 py-1 text-xs text-[color:var(--ink-soft)]"
+                  className="rounded-full border border-[color:var(--line)] bg-[rgba(250,246,236,0.92)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--olive)]"
                 >
                   {tag.name}
                 </span>

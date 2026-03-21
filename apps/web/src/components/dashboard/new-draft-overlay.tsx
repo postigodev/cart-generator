@@ -17,6 +17,10 @@ import {
 
 const INITIAL_STATE: DraftFlowActionState = {};
 
+function getDietaryBadges(recipe: BaseRecipe) {
+  return recipe.tags.filter((tag) => tag.kind === "dietary_badge").slice(0, 3);
+}
+
 function SubmitButton(props: {
   intent: "save" | "generate";
   label: string;
@@ -171,15 +175,15 @@ export function NewDraftOverlay(props: {
                 <label className="block w-full max-w-xl flex-1">
                   <span className="sr-only">Search recipes</span>
                   <div className="relative">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[color:var(--ink-soft)]/72">
-                      ⌕
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-soft)]/72">
+                      Search
                     </span>
                     <input
                       type="search"
                       value={query}
                       onChange={(event) => setQuery(event.target.value)}
                       placeholder="Search dishes"
-                      className="min-h-11 w-full rounded-full border border-[color:var(--line)] bg-white pl-10 pr-4 text-sm text-[color:var(--forest-strong)] outline-none transition placeholder:text-[color:var(--ink-soft)]/72 focus:border-[color:var(--olive)]"
+                      className="min-h-11 w-full rounded-full border border-[color:var(--line)] bg-white pl-20 pr-4 text-sm text-[color:var(--forest-strong)] outline-none transition placeholder:text-[color:var(--ink-soft)]/72 focus:border-[color:var(--olive)]"
                     />
                   </div>
                 </label>
@@ -231,6 +235,7 @@ export function NewDraftOverlay(props: {
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredRecipes.map((recipe) => {
                   const selected = selectedRecipeIds.includes(recipe.id);
+                  const badges = getDietaryBadges(recipe);
 
                   return (
                     <button
@@ -243,7 +248,7 @@ export function NewDraftOverlay(props: {
                             : [...current, recipe.id],
                         )
                       }
-                      className={`flex min-h-[14rem] flex-col overflow-hidden rounded-[1.3rem] border text-left transition ${
+                      className={`flex min-h-[13rem] flex-col overflow-hidden rounded-[1.3rem] border text-left transition ${
                         selected
                           ? "border-[color:var(--forest)] bg-[color:var(--forest)]/5 shadow-[0_10px_28px_rgba(23,50,36,0.12)]"
                           : "border-[color:var(--line)] bg-white/56 hover:border-[color:var(--olive)]/28"
@@ -269,15 +274,15 @@ export function NewDraftOverlay(props: {
                         <div className="mt-2 font-display text-[1.25rem] leading-[0.96] text-[color:var(--forest-strong)]">
                           {recipe.name}
                         </div>
-                        <p className="mt-2 line-clamp-2 text-xs leading-5 text-[color:var(--ink-soft)]">
-                          {recipe.description?.trim() || "Ready for planning."}
+                        <p className="mt-2 text-xs text-[color:var(--ink-soft)]">
+                          Servings: {recipe.servings}
                         </p>
                         <div className="mt-auto pt-3">
                           <div className="flex flex-wrap gap-1.5">
-                            {recipe.tags.slice(0, 3).map((tag) => (
+                            {badges.map((tag) => (
                               <span
                                 key={tag.id}
-                                className="rounded-full border border-[color:var(--olive)]/18 bg-[color:var(--olive)]/8 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--forest-strong)]"
+                                className="rounded-full border border-[color:var(--line)] bg-[rgba(250,246,236,0.92)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--olive)]"
                               >
                                 {tag.name}
                               </span>
@@ -317,6 +322,19 @@ export function NewDraftOverlay(props: {
                           </div>
                           <div className="mt-1 text-sm font-semibold text-[color:var(--forest-strong)]">
                             {recipe.name}
+                          </div>
+                          <div className="mt-1 text-xs text-[color:var(--ink-soft)]">
+                            Servings: {recipe.servings}
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {getDietaryBadges(recipe).map((tag) => (
+                              <span
+                                key={tag.id}
+                                className="rounded-full border border-[color:var(--line)] bg-[rgba(250,246,236,0.92)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--olive)]"
+                              >
+                                {tag.name}
+                              </span>
+                            ))}
                           </div>
                         </div>
                         <button

@@ -109,7 +109,8 @@ export function PlanningDetailOverlay(props: {
                 {props.detail.draft.name ?? "Untitled draft"}
               </h2>
               <p className="mt-2 text-sm text-[color:var(--ink-soft)]">
-                Retailer {props.detail.draft.retailer} · {props.detail.draft.selections.length} selections · updated{" "}
+                Retailer {props.detail.draft.retailer} ·{" "}
+                {props.detail.draft.selections.length} selections · updated{" "}
                 {formatDate(props.detail.draft.updated_at)}
               </p>
             </div>
@@ -163,10 +164,16 @@ export function PlanningDetailOverlay(props: {
                       </div>
                     </div>
 
-                    <p className="line-clamp-3 text-sm leading-6 text-[color:var(--ink-soft)]">
-                      {selection.recipe?.description?.trim() ||
-                        "No description yet for this recipe."}
-                    </p>
+                    <div className="flex min-h-6 flex-wrap gap-1.5">
+                      {getDietaryBadges(selection.recipe?.tags).map((badge) => (
+                        <span
+                          key={badge.id}
+                          className="rounded-full border border-[color:var(--line)] bg-[rgba(250,246,236,0.92)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--olive)]"
+                        >
+                          {badge.name}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </article>
               ))}
@@ -177,7 +184,9 @@ export function PlanningDetailOverlay(props: {
     );
   }
 
-  const recipeMap = new Map(props.detail.recipes.map((recipe) => [recipe.id, recipe]));
+  const recipeMap = new Map(
+    props.detail.recipes.map((recipe) => [recipe.id, recipe]),
+  );
   const cartRecipes = props.detail.cart.dishes.map((dish, index) => ({
     dish,
     recipe: dish.id ? recipeMap.get(dish.id) : undefined,
@@ -196,7 +205,10 @@ export function PlanningDetailOverlay(props: {
               {props.detail.cart.name ?? "Unnamed cart"}
             </h2>
             <p className="mt-2 text-sm text-[color:var(--ink-soft)]">
-              Retailer {props.detail.cart.retailer} · {props.detail.cart.dishes.length} dishes · {props.detail.cart.overview.length} aggregated ingredients · updated{" "}
+              Retailer {props.detail.cart.retailer} ·{" "}
+              {props.detail.cart.dishes.length} dishes ·{" "}
+              {props.detail.cart.overview.length} aggregated ingredients ·
+              updated{" "}
               {formatDate(
                 props.detail.cart.updated_at ??
                   props.detail.cart.created_at ??
