@@ -597,6 +597,23 @@ Implemented direction:
 - `User.onboardingCompletedAt`
 - `POST /api/v1/me/onboarding/complete`
 
+## 32.6. Shopping Location Should Be Retailer-Neutral And GPS-Ready
+
+Decision:
+- persist a neutral `shopping_location` block inside `/me/preferences`
+- do not bind the user's profile to one retailer before real provider integrations exist
+- launch with manual ZIP/label entry first, but keep the shape ready for GPS later
+
+Why:
+- store/location matters across retailers, not just Kroger or Walmart
+- asking for a preferred retailer too early adds coupling without solving the real problem
+- GPS can improve UX later, but the model should not depend on geolocation from day one
+
+Implications:
+- `shopping_location` should include `zip_code`, `label`, and optional `latitude`/`longitude`
+- onboarding and account/preferences can share the same write surface
+- future provider integrations can resolve retailer-specific `locationId` values from this neutral profile block
+
 ## 33. Phone Auth Should Not Be In The First Auth Slice
 
 Decision:

@@ -36,6 +36,12 @@ export async function savePreferencesAndCompleteAction(
   const preferredTagIds = formData
     .getAll("preferred_tag_ids")
     .map((value) => String(value));
+  const shoppingLocationZipCode = String(
+    formData.get("shopping_location_zip_code") ?? "",
+  ).trim();
+  const shoppingLocationLabel = String(
+    formData.get("shopping_location_label") ?? "",
+  ).trim();
 
   const preferencesResponse = await callAuthedJson("/me/preferences", {
     method: "PUT",
@@ -45,6 +51,10 @@ export async function savePreferencesAndCompleteAction(
     body: JSON.stringify({
       preferred_cuisine_ids: preferredCuisineIds,
       preferred_tag_ids: preferredTagIds,
+      shopping_location: {
+        zip_code: shoppingLocationZipCode,
+        label: shoppingLocationLabel,
+      },
     }),
   }).catch(() => null);
 

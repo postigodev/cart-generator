@@ -136,6 +136,12 @@ export const userTagExample = {
 };
 
 export const mePreferencesExample = {
+  shopping_location: {
+    zip_code: '60611',
+    label: 'Chicago, IL',
+    latitude: 41.8925,
+    longitude: -87.6262,
+  },
   preferred_cuisine_ids: ['cuisine-mediterranean', 'cuisine-peruvian'],
   preferred_cuisines: [
     {
@@ -185,6 +191,10 @@ export const meProfileExample = {
 };
 
 export const updateMePreferencesRequestExample = {
+  shopping_location: {
+    zip_code: '60611',
+    label: 'Chicago, IL',
+  },
   preferred_cuisine_ids: ['cuisine-peruvian', 'cuisine-mediterranean'],
   preferred_tag_ids: ['tag-system-weeknight', 'tag-system-comfort-food'],
 };

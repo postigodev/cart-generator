@@ -25,8 +25,8 @@ export class UpdateCartDraftDto {
   @Type(() => CartSelectionDto)
   selections?: CartSelectionDto[];
 
-  @ApiPropertyOptional({ enum: ['walmart'] })
+  @ApiPropertyOptional({ enum: ['walmart', 'kroger'] })
   @IsOptional()
-  @IsIn(['walmart'])
+  @IsIn(['walmart', 'kroger'])
   retailer?: Retailer;
 }

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import type {
   Cart,
   CreateCartRequest,
@@ -173,16 +178,23 @@ export class CartService {
     input: CreateShoppingCartDto,
     actorUserId?: string,
   ): Promise<ShoppingCart> {
-    const actor = await this.userContextService.resolveActorUser(actorUserId);
+    const actor =
+      await this.userContextService.resolveActorUserShoppingContext(actorUserId);
     const cart = await this.cartPersistenceService.findCartById(actor.id, cartId);
 
     if (!cart) {
       throw new NotFoundException(`Cart ${cartId} not found`);
     }
 
+    const searchContext = this.buildRetailerSearchContext(
+      input.retailer,
+      actor.preferredZipCode,
+    );
     const computation = this.aggregationService.compute(cart.dishes);
     const matchedItems = await this.matchingService.matchIngredients(
       computation.overview,
+      input.retailer,
+      searchContext,
     );
     const estimatedSubtotal =
       this.matchingService.estimateSubtotal(matchedItems);
@@ -267,11 +279,23 @@ export class CartService {
   async searchRetailerProducts(
     retailer: Retailer,
     query: string,
+    actorUserId?: string,
   ): Promise<RetailerProductSearchResponse> {
+    const actor =
+      await this.userContextService.resolveActorUserShoppingContext(actorUserId);
+    const searchContext = this.buildRetailerSearchContext(
+      retailer,
+      actor.preferredZipCode,
+    );
+
     return {
       retailer,
       query,
-      candidates: await this.matchingService.searchProducts(retailer, query),
+      candidates: await this.matchingService.searchProducts(
+        retailer,
+        query,
+        searchContext,
+      ),
     };
   }
 
@@ -280,5 +304,27 @@ export class CartService {
       ...cart,
       overview: this.aggregationService.compute(cart.dishes).overview,
     };
+  }
+
+  private buildRetailerSearchContext(
+    retailer: Retailer,
+    preferredZipCode: string | null,
+  ) {
+    if (retailer === 'kroger') {
+      const normalizedZipCode = preferredZipCode?.trim();
+      if (!normalizedZipCode) {
+        throw new BadRequestException('Set your shopping location first.');
+      }
+
+      if (!this.matchingService.isProviderEnabled('kroger')) {
+        throw new ServiceUnavailableException(
+          'Kroger search is not configured right now.',
+        );
+      }
+
+      return { zipCode: normalizedZipCode };
+    }
+
+    return {};
   }
 }

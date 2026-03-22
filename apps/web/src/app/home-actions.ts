@@ -45,6 +45,29 @@ export type UpdateShoppingCartActionState = {
   shoppingCart?: ShoppingCart;
 };
 
+async function readErrorMessage(
+  response: Response | null,
+  fallback: string,
+) {
+  if (!response) {
+    return fallback;
+  }
+
+  try {
+    const payload = (await response.json()) as { message?: string | string[] };
+    if (Array.isArray(payload.message)) {
+      return payload.message[0] ?? fallback;
+    }
+    if (typeof payload.message === "string" && payload.message.trim()) {
+      return payload.message.trim();
+    }
+  } catch {
+    // Ignore parse failures and use fallback below.
+  }
+
+  return fallback;
+}
+
 async function callAuthedJson(path: string, init?: RequestInit) {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
@@ -229,7 +252,10 @@ export async function createShoppingCartAction(
 
   if (!response?.ok) {
     return {
-      error: "Unable to generate this shopping cart right now.",
+      error: await readErrorMessage(
+        response,
+        "Unable to generate this shopping cart right now.",
+      ),
     };
   }
 
@@ -263,7 +289,10 @@ export async function searchRetailerProductsAction(
 
   if (!response?.ok) {
     return {
-      error: "Unable to search retailer products right now.",
+      error: await readErrorMessage(
+        response,
+        "Unable to search retailer products right now.",
+      ),
     };
   }
 

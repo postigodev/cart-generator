@@ -159,6 +159,10 @@ export function NewDraftOverlay(props: {
         ? "Adjust the draft or generate a cart once the selection is ready."
         : "Choose recipes, keep the selection visible, and generate a cart. Save stays here only when you want to keep the run incomplete.";
   const nameLabel = mode === "edit-draft" ? "Draft name" : "Cart name";
+  const locationNote =
+    retailer === "kroger"
+      ? "Kroger search needs your shopping location in preferences."
+      : null;
 
   return (
     <div className="fixed inset-0 z-50 bg-[rgba(24,35,29,0.6)] p-4 backdrop-blur-sm sm:p-6">
@@ -214,6 +218,7 @@ export function NewDraftOverlay(props: {
                     className="min-h-11 w-full rounded-2xl border border-[color:var(--line)] bg-white px-4 text-sm text-[color:var(--forest-strong)] outline-none transition focus:border-[color:var(--olive)]"
                   >
                     <option value="walmart">Walmart</option>
+                    <option value="kroger">Kroger</option>
                   </select>
                 </label>
 
@@ -233,6 +238,12 @@ export function NewDraftOverlay(props: {
                   </div>
                 </label>
               </div>
+
+              {locationNote ? (
+                <p className="text-sm text-[color:var(--ink-soft)]">
+                  {locationNote}
+                </p>
+              ) : null}
 
               {availableTags.length > 0 ? (
                 <div className="flex flex-wrap items-center gap-2">

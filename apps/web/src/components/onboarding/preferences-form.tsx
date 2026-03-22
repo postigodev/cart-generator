@@ -141,6 +141,49 @@ export function PreferencesForm(props: {
           </div>
         </section>
 
+        <section className="grid gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[color:var(--olive)]">
+              Step 3
+            </p>
+            <h2 className="mt-2 font-display text-4xl leading-none text-[color:var(--forest-strong)]">
+              Where do you usually shop?
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[color:var(--ink-soft)]">
+              Add a ZIP code or place label now. Later this same profile field
+              can be filled from GPS and used to resolve nearby stores.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="grid gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--olive)]">
+                ZIP code
+              </span>
+              <input
+                type="text"
+                name="shopping_location_zip_code"
+                defaultValue={props.preferences.shopping_location?.zip_code ?? ""}
+                placeholder="60611"
+                className="min-h-12 rounded-2xl border border-[color:var(--line)] bg-white/70 px-4 text-sm text-[color:var(--forest-strong)] outline-none transition placeholder:text-[color:var(--ink-soft)]/72 focus:border-[color:var(--olive)]"
+              />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--olive)]">
+                Place label
+              </span>
+              <input
+                type="text"
+                name="shopping_location_label"
+                defaultValue={props.preferences.shopping_location?.label ?? ""}
+                placeholder="Chicago, IL"
+                className="min-h-12 rounded-2xl border border-[color:var(--line)] bg-white/70 px-4 text-sm text-[color:var(--forest-strong)] outline-none transition placeholder:text-[color:var(--ink-soft)]/72 focus:border-[color:var(--olive)]"
+              />
+            </label>
+          </div>
+        </section>
+
         {state.error ? (
           <p className="rounded-2xl border border-[color:var(--clay)]/20 bg-[color:var(--clay)]/10 px-4 py-3 text-sm text-[color:var(--clay)]">
             {state.error}

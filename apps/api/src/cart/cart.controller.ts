@@ -13,6 +13,7 @@ import {
 import { CurrentUser } from '../auth/current-user.decorator';
 import { RequestActorGuard } from '../auth/request-actor.guard';
 import type { AuthenticatedUser } from '../auth/auth.types';
+import type { Retailer } from '@cart/shared';
 import {
   ApiCartController,
   ApiCreateCart,
@@ -208,9 +209,10 @@ export class CartController {
   @ApiCartController('retailer-products')
   @ApiSearchRetailerProducts()
   async searchRetailerProducts(
-    @Param('retailer') retailer: 'walmart',
+    @Param('retailer') retailer: Retailer,
     @Query('query') query: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.cartService.searchRetailerProducts(retailer, query);
+    return this.cartService.searchRetailerProducts(retailer, query, user.sub);
   }
 }

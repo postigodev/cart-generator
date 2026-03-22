@@ -14,7 +14,7 @@ export function ShoppingHistorySection(props: {
     <SectionShell
       eyebrow="Retail layer"
       title="Shopping Cart History"
-      note="These snapshots sit on the retailer-facing side of the new model. Matching stays deterministic today and can swap from mock data to Walmart behind this boundary."
+      note="These snapshots sit on the retailer-facing side of the planning model. Product matching can stay mock-backed in development or switch to a real retailer provider behind the same boundary."
     >
       <div className="mb-4 flex items-center justify-between">
         <StatusPill

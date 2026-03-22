@@ -1,4 +1,5 @@
 import { MatchingService } from './matching.service';
+import { KrogerRetailerProductProvider } from './kroger-retailer-product.provider';
 import { MockRetailerProductProvider } from './mock-retailer-product.provider';
 import { WalmartRetailerProductProvider } from './walmart-retailer-product.provider';
 
@@ -8,6 +9,7 @@ describe('MatchingService', () => {
   beforeEach(() => {
     service = new MatchingService(
       new MockRetailerProductProvider(),
+      new KrogerRetailerProductProvider(),
       new WalmartRetailerProductProvider(),
     );
   });
@@ -21,7 +23,7 @@ describe('MatchingService', () => {
         purchase_unit_hint: 'cup',
         source_dishes: [],
       },
-    ]);
+    ], 'walmart');
 
     expect(match.selected_product?.product_id).toBe('walmart-rice-1');
     expect(match.selected_quantity).toBe(2);
@@ -36,7 +38,7 @@ describe('MatchingService', () => {
         unit: 'unit',
         source_dishes: [],
       },
-    ]);
+    ], 'walmart');
 
     expect(match.selected_product).toBeNull();
     expect(match.fallback_used).toBe(true);
@@ -51,7 +53,7 @@ describe('MatchingService', () => {
         unit: 'tsp',
         source_dishes: [],
       },
-    ]);
+    ], 'walmart');
 
     expect(match.selected_product?.product_id).toBe('walmart-aji-1');
     expect(match.matched_amount).toBe(22.5);

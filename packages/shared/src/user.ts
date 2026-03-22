@@ -28,9 +28,16 @@ export type UserPreferences = {
     name: string;
     slug: string;
     scope: "system" | "user";
+    kind: "general" | "dietary_badge";
     created_at: string;
     updated_at: string;
   }>;
+  shopping_location?: {
+    zip_code?: string;
+    label?: string;
+    latitude?: number;
+    longitude?: number;
+  };
 };
 
 export type UserStats = {

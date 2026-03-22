@@ -41,6 +41,14 @@ function calculateSubtotal(items: MatchedIngredientProduct[]) {
   );
 }
 
+function formatRetailerName(retailer: string) {
+  if (!retailer) {
+    return "Retailer";
+  }
+
+  return retailer.charAt(0).toUpperCase() + retailer.slice(1);
+}
+
 function buildReplacedItem(
   currentItem: MatchedIngredientProduct,
   candidate: ProductCandidate,
@@ -588,8 +596,8 @@ export function ShoppingCartDetailOverlay(props: {
                           : "Add manual item"}
                       </p>
                       <p className="mt-1 text-sm text-[color:var(--ink-soft)]">
-                        Search Walmart and choose a product to use in this shopping
-                        cart.
+                        Search {formatRetailerName(currentShoppingCart.retailer)} and
+                        choose a product to use in this shopping cart.
                       </p>
                     </div>
 
@@ -647,7 +655,8 @@ export function ShoppingCartDetailOverlay(props: {
                                   {candidate.title}
                                 </p>
                                 <p className="mt-1 text-xs uppercase tracking-[0.14em] text-[color:var(--ink-soft)]">
-                                  {candidate.brand ?? "Walmart"}
+                                  {candidate.brand ??
+                                    formatRetailerName(currentShoppingCart.retailer)}
                                 </p>
                                 {candidate.quantity_text ? (
                                   <p className="mt-2 text-xs text-[color:var(--ink-soft)]">
@@ -674,7 +683,7 @@ export function ShoppingCartDetailOverlay(props: {
                     ) : (
                       <div className="rounded-[1rem] border border-dashed border-[color:var(--line)] bg-[color:var(--paper)]/52 px-4 py-3 text-sm text-[color:var(--ink-soft)]">
                         {isSearching
-                          ? "Searching Walmart..."
+                          ? `Searching ${formatRetailerName(currentShoppingCart.retailer)}...`
                           : "Search to replace a match or add a manual item."}
                       </div>
                     )}

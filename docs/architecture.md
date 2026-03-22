@@ -363,6 +363,7 @@ Current status:
 - `/me` is implemented
 - `PATCH /me` is implemented
 - `/me/preferences` is implemented for cuisine and system-tag preferences
+- `/me/preferences` now also stores a neutral `shopping_location` block for future store resolution
 - `/me/onboarding/complete` is implemented
 - the web app now uses bearer-token auth for its dashboard flow
 - the temporary `x-user-id` fallback has now been removed from normal backend flows and Swagger guidance
@@ -395,6 +396,7 @@ Status:
 - onboarding completion is tracked separately on `User`
 - `/api/v1/me/onboarding/complete` is implemented
 - the web app now routes incomplete users into a required onboarding flow
+- onboarding and account/preferences both expose manual shopping-location capture using the same preference surface
 
 ### 3. Real Retailer Provider
 

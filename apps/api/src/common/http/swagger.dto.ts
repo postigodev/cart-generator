@@ -167,6 +167,21 @@ export class TagResponseDto {
 }
 
 export class UserPreferencesResponseDto {
+  @ApiPropertyOptional({
+    example: {
+      zip_code: '60611',
+      label: 'Chicago, IL',
+      latitude: 41.8925,
+      longitude: -87.6262,
+    },
+  })
+  shopping_location?: {
+    zip_code?: string;
+    label?: string;
+    latitude?: number;
+    longitude?: number;
+  };
+
   @ApiProperty({ example: ['cuisine-peruvian', 'cuisine-mediterranean'] })
   preferred_cuisine_ids!: string[];
 

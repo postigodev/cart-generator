@@ -118,6 +118,46 @@ export function PreferencesForm(props: {
         <section className="grid gap-5 border-t border-[color:var(--line)] pt-7">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--olive)]">
+              Shopping location
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[color:var(--ink-soft)]">
+              Keep a ZIP code or place label on file so future retailer
+              providers can resolve nearby stores without asking from scratch.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="grid gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--olive)]">
+                ZIP code
+              </span>
+              <input
+                type="text"
+                name="shopping_location_zip_code"
+                defaultValue={props.preferences.shopping_location?.zip_code ?? ""}
+                placeholder="60611"
+                className="min-h-12 rounded-2xl border border-[color:var(--line)] bg-white/80 px-4 text-sm text-[color:var(--forest-strong)] outline-none transition placeholder:text-[color:var(--ink-soft)]/72 focus:border-[color:var(--olive)]"
+              />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--olive)]">
+                Place label
+              </span>
+              <input
+                type="text"
+                name="shopping_location_label"
+                defaultValue={props.preferences.shopping_location?.label ?? ""}
+                placeholder="Chicago, IL"
+                className="min-h-12 rounded-2xl border border-[color:var(--line)] bg-white/80 px-4 text-sm text-[color:var(--forest-strong)] outline-none transition placeholder:text-[color:var(--ink-soft)]/72 focus:border-[color:var(--olive)]"
+              />
+            </label>
+          </div>
+        </section>
+
+        <section className="grid gap-5 border-t border-[color:var(--line)] pt-7">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--olive)]">
               Shared taste signals
             </p>
             <p className="mt-2 text-sm leading-6 text-[color:var(--ink-soft)]">

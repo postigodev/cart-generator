@@ -29,6 +29,7 @@ The Next.js web app in [apps/web](/C:/Users/akuma/repos/cart-generator/apps/web)
 - shopping-cart detail now supports manual editing over the same persisted resource: replace matches, add manual items, delete lines, and save
 - saved shopping carts can now be browsed from a dedicated `/shopping` surface
 - `/account/settings/*` holds account, preferences, and security
+- onboarding and account preferences now also persist a neutral `shopping_location` block (manual first, GPS-ready later)
 
 ### API
 
@@ -37,6 +38,7 @@ The NestJS API in [apps/api](/C:/Users/akuma/repos/cart-generator/apps/api) curr
 - user and admin identities in the database
 - real auth endpoints for email/password, Google login, refresh, logout, and `/me`
 - `/api/v1/me/preferences` for auth-backed cuisine and tag preferences
+- `/api/v1/me/preferences` also carries a neutral `shopping_location` profile block
 - `/api/v1/me/onboarding/complete` for explicit onboarding completion
 - a global controlled cuisine catalog exposed at `/api/v1/cuisines`
 - hybrid tags with explicit `/api/v1/tags` endpoints
@@ -275,6 +277,7 @@ This separation is intentional:
 - `/api/v1/auth/register`, `/login`, `/google`, `/refresh`, `/logout`, `GET /me`, and `PATCH /me` are implemented.
 - `/api/v1/cuisines` now exposes the global cuisine catalog.
 - `/api/v1/me/preferences` now supports read/replace for user cuisine and system-tag preferences.
+- `/api/v1/me/preferences` now also supports `shopping_location` (`zip_code`, `label`, `latitude`, `longitude`) for future retailer store resolution.
 - `/api/v1/me/onboarding/complete` now marks onboarding completion independently from preferences.
 - `/api/v1/tags` now supports list/create/update/delete.
 - `/api/v1/tags` now returns `kind` so clients can distinguish general taxonomy tags from dietary badge tags.
@@ -308,11 +311,12 @@ This separation is intentional:
 
 The next high-signal work is now more product-shaped than before.
 
-1. Turn on the real Walmart provider with credentials and validate the live search/matching behavior against sandbox first.
-2. Expand the shopping-cart workspace further with quantity editing, repeat-generation strategy, and first-class history/revisit flows.
-3. Add a clearer draft -> cart conversion affordance inside draft detail, beyond the generic composer action.
-4. Expand recipe library actions with `Fork/Edit` and a stronger owner/system distinction in the UI.
-5. Harden Google OAuth for production secret management and deploy configuration.
+1. Add GPS-assisted shopping-location setup on top of the new manual `shopping_location` profile block.
+2. Decide the first real store resolver/provider path after Walmart friction, most likely Kroger or another easier self-serve retailer API.
+3. Expand the shopping-cart workspace further with quantity editing, repeat-generation strategy, and first-class history/revisit flows.
+4. Add a clearer draft -> cart conversion affordance inside draft detail, beyond the generic composer action.
+5. Expand recipe library actions with `Fork/Edit` and a stronger owner/system distinction in the UI.
+6. Harden Google OAuth for production secret management and deploy configuration.
 
 ## Current Gaps
 

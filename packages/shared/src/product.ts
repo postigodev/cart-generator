@@ -1,4 +1,4 @@
-export type Retailer = "walmart";
+export type Retailer = "walmart" | "kroger";
 
 export type ProductCandidate = {
   product_id: string;

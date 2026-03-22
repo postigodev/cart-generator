@@ -41,6 +41,29 @@ export class UserContextService {
     return null;
   }
 
+  async resolveActorUserShoppingContext(actorUserId?: string): Promise<{
+    id: string;
+    preferredZipCode: string | null;
+    preferredLocationLabel: string | null;
+    preferredLatitude: number | null;
+    preferredLongitude: number | null;
+  }> {
+    const resolvedActorUserId =
+      actorUserId ?? this.requestContextService.getActorUserId();
+
+    if (!resolvedActorUserId) {
+      throw new UnauthorizedException('Authentication required');
+    }
+
+    const actor = await this.findActorUserShoppingContext(resolvedActorUserId);
+
+    if (!actor) {
+      throw new UnauthorizedException('Authentication required');
+    }
+
+    return actor;
+  }
+
   private findActorUser(actorIdentifier: string) {
     const normalizedIdentifier = actorIdentifier.trim();
     const where = normalizedIdentifier.includes('@')
@@ -50,6 +73,24 @@ export class UserContextService {
     return this.prisma.user.findUnique({
       where,
       select: { id: true },
+    });
+  }
+
+  private findActorUserShoppingContext(actorIdentifier: string) {
+    const normalizedIdentifier = actorIdentifier.trim();
+    const where = normalizedIdentifier.includes('@')
+      ? { email: normalizedIdentifier }
+      : { id: normalizedIdentifier };
+
+    return this.prisma.user.findUnique({
+      where,
+      select: {
+        id: true,
+        preferredZipCode: true,
+        preferredLocationLabel: true,
+        preferredLatitude: true,
+        preferredLongitude: true,
+      },
     });
   }
 }

@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import type { BaseRecipe } from '@cart/shared';
 import { AggregationService } from '../aggregation/aggregation.service';
+import { KrogerRetailerProductProvider } from '../matching/kroger-retailer-product.provider';
 import { MockRetailerProductProvider } from '../matching/mock-retailer-product.provider';
 import { MatchingService } from '../matching/matching.service';
 import { WalmartRetailerProductProvider } from '../matching/walmart-retailer-product.provider';
@@ -66,6 +67,13 @@ describe('CartService', () => {
 
     userContextService = {
       resolveActorUser: jest.fn().mockResolvedValue({ id: 'user-1' }),
+      resolveActorUserShoppingContext: jest.fn().mockResolvedValue({
+        id: 'user-1',
+        preferredZipCode: '60611',
+        preferredLocationLabel: 'Chicago, IL',
+        preferredLatitude: null,
+        preferredLongitude: null,
+      }),
     } as unknown as jest.Mocked<UserContextService>;
 
     cartPersistenceService = {
@@ -107,6 +115,7 @@ describe('CartService', () => {
       new AggregationService(),
       new MatchingService(
         new MockRetailerProductProvider(),
+        new KrogerRetailerProductProvider(),
         new WalmartRetailerProductProvider(),
       ),
       cartPersistenceService,
@@ -170,6 +179,48 @@ describe('CartService', () => {
     expect(result.cart_id).toBe('cart-1');
     expect(result.matched_items.length).toBeGreaterThan(0);
     expect(cartPersistenceService.createShoppingCart).toHaveBeenCalledTimes(1);
+  });
+
+  it('requires shopping location before generating a Kroger shopping cart', async () => {
+    (userContextService.resolveActorUserShoppingContext as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      preferredZipCode: null,
+      preferredLocationLabel: null,
+      preferredLatitude: null,
+      preferredLongitude: null,
+    });
+
+    cartPersistenceService.findCartById.mockResolvedValue({
+      id: 'cart-1',
+      user_id: 'user-1',
+      name: 'Weekly dinner plan',
+      retailer: 'kroger',
+      selections: [
+        {
+          recipe_id: 'recipe-1',
+          recipe_type: 'base',
+          quantity: 1,
+        },
+      ],
+      dishes: [
+        {
+          id: 'recipe-1',
+          name: recipe.name,
+          cuisine: recipe.cuisine.label,
+          servings: recipe.servings,
+          ingredients: recipe.ingredients,
+          steps: recipe.steps,
+          tags: recipe.tags.map((tag) => tag.name),
+        },
+      ],
+      overview: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
+    await expect(
+      service.createShoppingCart('cart-1', { retailer: 'kroger' }),
+    ).rejects.toThrow('Set your shopping location first.');
   });
 
   it('lists shopping cart history summaries', async () => {

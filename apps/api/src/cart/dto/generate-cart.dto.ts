@@ -41,7 +41,7 @@ export class GenerateCartDto {
   @Type(() => GenerateCartSelectionDto)
   selections!: GenerateCartSelectionDto[];
 
-  @ApiProperty({ enum: ['walmart'] })
-  @IsIn(['walmart'])
+  @ApiProperty({ enum: ['walmart', 'kroger'] })
+  @IsIn(['walmart', 'kroger'])
   retailer!: Retailer;
 }

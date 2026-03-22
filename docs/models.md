@@ -465,6 +465,12 @@ type UserPreferences = {
   preferred_cuisines: Cuisine[];
   preferred_tag_ids: string[];
   preferred_tags: Tag[];
+  shopping_location?: {
+    zip_code?: string;
+    label?: string;
+    latitude?: number;
+    longitude?: number;
+  };
 };
 ```
 
@@ -474,6 +480,8 @@ Interpretation:
 - cuisines in preferences must exist in the global catalog
 - tags in preferences are currently limited to shared system tags
 - `PUT /api/v1/me/preferences` replaces the full set
+- `shopping_location` is intentionally retailer-neutral and manual-first
+- `latitude` and `longitude` are optional now so the same shape can absorb GPS later without another contract rewrite
 - empty arrays are valid and do not imply incomplete onboarding
 
 ## 8. Auth Models

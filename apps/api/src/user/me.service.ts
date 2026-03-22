@@ -42,6 +42,12 @@ export class MeService {
   }
 
   private mapPreferences(input: {
+    user: {
+      preferredZipCode: string | null;
+      preferredLocationLabel: string | null;
+      preferredLatitude: number | null;
+      preferredLongitude: number | null;
+    };
     preferredCuisines: Array<{
       cuisine: Parameters<typeof mapCuisine>[0];
     }>;
@@ -61,6 +67,18 @@ export class MeService {
       preferred_cuisines: preferredCuisines,
       preferred_tag_ids: preferredTags.map((tag) => tag.id),
       preferred_tags: preferredTags,
+      shopping_location:
+        input.user.preferredZipCode ||
+        input.user.preferredLocationLabel ||
+        input.user.preferredLatitude !== null ||
+        input.user.preferredLongitude !== null
+          ? {
+              zip_code: input.user.preferredZipCode ?? undefined,
+              label: input.user.preferredLocationLabel ?? undefined,
+              latitude: input.user.preferredLatitude ?? undefined,
+              longitude: input.user.preferredLongitude ?? undefined,
+            }
+          : undefined,
     };
   }
 
@@ -236,7 +254,16 @@ export class MeService {
   async getPreferences(userId: string): Promise<UserPreferences> {
     await this.findUserOrThrow(userId);
 
-    const [preferredCuisines, preferredTags] = await Promise.all([
+    const [user, preferredCuisines, preferredTags] = await Promise.all([
+      this.prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+        select: {
+          preferredZipCode: true,
+          preferredLocationLabel: true,
+          preferredLatitude: true,
+          preferredLongitude: true,
+        },
+      }),
       this.prisma.userPreferredCuisine.findMany({
         where: { userId },
         include: { cuisine: true },
@@ -247,7 +274,7 @@ export class MeService {
       }),
     ]);
 
-    return this.mapPreferences({ preferredCuisines, preferredTags });
+    return this.mapPreferences({ user, preferredCuisines, preferredTags });
   }
 
   async updatePreferences(
@@ -288,7 +315,22 @@ export class MeService {
       );
     }
 
+    const shoppingLocation = input.shopping_location;
+    const normalizedZipCode = shoppingLocation?.zip_code?.trim() || null;
+    const normalizedLabel = shoppingLocation?.label?.trim() || null;
+    const normalizedLatitude = shoppingLocation?.latitude ?? null;
+    const normalizedLongitude = shoppingLocation?.longitude ?? null;
+
     await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          preferredZipCode: normalizedZipCode,
+          preferredLocationLabel: normalizedLabel,
+          preferredLatitude: normalizedLatitude,
+          preferredLongitude: normalizedLongitude,
+        },
+      }),
       this.prisma.userPreferredCuisine.deleteMany({
         where: { userId },
       }),

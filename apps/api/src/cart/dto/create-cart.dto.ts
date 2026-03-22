@@ -9,7 +9,7 @@ export class CreateCartDto extends CartSelectionsDto {
   @IsString()
   name?: string;
 
-  @ApiProperty({ enum: ['walmart'] })
-  @IsIn(['walmart'])
+  @ApiProperty({ enum: ['walmart', 'kroger'] })
+  @IsIn(['walmart', 'kroger'])
   retailer!: Retailer;
 }
